@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -21,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo_path',
     ];
 
     /**
@@ -44,5 +47,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Volúmenes asociados al usuario a través de la tabla pivote user_volumes.
+     */
+    public function volumes()
+    {
+        return $this->belongsToMany(Volume::class, 'user_volumes')
+            ->withPivot(['readed', 'page', 'purchase_date', 'note', 'rating'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Relación directa con user_volumes si necesitás acceder a la tabla intermedia.
+     */
+    public function userVolumes()
+    {
+        return $this->hasMany(UserVolume::class);
     }
 }
