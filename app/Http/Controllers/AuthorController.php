@@ -5,62 +5,87 @@ namespace App\Http\Controllers;
 use App\Models\Author;
 use App\Http\Requests\StoreAuthorRequest;
 use App\Http\Requests\UpdateAuthorRequest;
+use Illuminate\Support\Facades\Http;
 
 class AuthorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function show($anilistId)
     {
-        //
+        // Buscar el autor en base a su anilist_id
+        $author = Author::where('anilist_id', $anilistId)->first();
+
+        if (!$author) {
+            // Si no existe en la DB, hacemos una petición rápida para obtener el nombre
+            $graphqlQuery = <<<GQL
+            query (\$id: Int) {
+                Staff(id: \$id) {
+                    name {
+                        full
+                    }
+                }
+            }
+            GQL;
+
+            $variables = [
+                'id' => (int) $anilistId,
+            ];
+
+            $response = Http::post('https://graphql.anilist.co', [
+                'query' => $graphqlQuery,
+                'variables' => $variables,
+            ]);
+
+            $staff = $response->json('data.Staff');
+
+            // Insertamos solo nombre y anilist_id
+            if ($staff) {
+                $author = Author::create([
+                    'name' => $staff['name']['full'] ?? 'Desconocido',
+                    'anilist_id' => $anilistId,
+                ]);
+            } else {
+                abort(404, 'Author not found.');
+            }
+        }
+
+        // Ahora hacemos la consulta extendida para mostrar datos en la vista
+        $extendedData = $this->fetchAuthorDetails($anilistId);
+
+        return view('authors.show', compact('author', 'extendedData'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    private function fetchAuthorDetails($anilistId)
     {
-        //
-    }
+        $graphqlQuery = <<<GQL
+        query (\$id: Int) {
+            Staff(id: \$id) {
+                name {
+                    full
+                    native
+                }
+                image {
+                    medium
+                }
+                gender
+                dateOfBirth {
+                    year
+                    month
+                    day
+                }
+                age
+            }
+        }
+        GQL;
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreAuthorRequest $request)
-    {
-        //
-    }
+        $variables = [
+            'id' => (int) $anilistId,
+        ];
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Author $author)
-    {
-        //
-    }
+        $response = Http::post('https://graphql.anilist.co', [
+            'query' => $graphqlQuery,
+            'variables' => $variables,
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Author $author)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateAuthorRequest $request, Author $author)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Author $author)
-    {
-        //
+        return $response->json('data.Staff');
     }
 }
