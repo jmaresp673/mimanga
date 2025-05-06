@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SeriesController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MangaSearchController;
@@ -30,6 +31,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/authors/{anilistId}', [AuthorController::class, 'show'])->name('authors.show');
     });
 
+    //Series Routes
+    Route::controller(SeriesController::class)->group(function () {
+        Route::get('/series/{anilistId}', [SeriesController::class, 'show'])->name('series.show');
+        Route::post('/series/{anilistId}/add', [SeriesController::class, 'add'])->name('series.add');
+        Route::post('/series/{anilistId}/remove', [SeriesController::class, 'remove'])->name('series.remove');
+    });
 
 });
 

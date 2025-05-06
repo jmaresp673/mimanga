@@ -7,8 +7,8 @@
 
     <div class="py-6">
         <x-main-container>
-            <div class="bg-white dark:bg-gray-800 shadow rounded p-6">
-                <img src="{{ $author->image }}" alt="{{ $author->name }}" class="w-32 h-32 rounded-full mx-auto mb-4">
+            <div class="bg-white dark:bg-gray-800 shadow rounded p-6 text-center">
+                <img src="{{ data_get($extendedData, 'image.medium', asset('storage/profile_photos/default.png')) }}" alt="{{ $author->name }}" class=" h-40 rounded-full mx-auto mb-4">
                 <x-text><strong>{{ __('Name: ') }}</strong> {{ $extendedData['name']['full'] ?? 'Unknow' }}</x-text>
                 @if(!empty($extendedData['name']['native']))
                     <x-text><strong>{{ __('Native name: ') }}</strong> {{ $extendedData['name']['native'] }}</x-text>
