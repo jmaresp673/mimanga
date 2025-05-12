@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Series;
 use App\Http\Requests\StoreSeriesRequest;
 use App\Http\Requests\UpdateSeriesRequest;
+use App\Services\EditionService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SeriesController extends Controller
 {
@@ -36,7 +38,7 @@ class SeriesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int $anilistId)
+    public function show(int $anilistId, EditionService $editionService)
     {
         // 1) GraphQL query
         $graphql = <<<'GQL'
@@ -98,10 +100,30 @@ class SeriesController extends Controller
             $mainAuthors[] = ['id' => null, 'name' => 'Unknow', 'role' => 'Author'];
         }
 
-        // 4) Pasar a la vista
+        // después de extraer los datos de la serie, llamamos al servicio de ediciones
+        // para obtener las ediciones disponibles en español
+        try {
+            $esData = $editionService->fetchByRomajiAndLang(
+                $media['title']['romaji'],
+                'ES'
+            ); // pasamos el romaji para buscar la edicion y el idioma para que lo haga en español
+        } catch (\InvalidArgumentException $e) {
+            // Si no encuentra la edicion o hay algun problema, marcamos $spanishTitle como null
+            // para no mostrarlo
+
+            // hacemos un log del error en consola
+            Log::error('Error fetching Spanish edition: ' . $e->getMessage());
+//            abort(400, $e->getMessage());
+        }
+
         return view('series.show', [
             'media' => $media,
             'mainAuthors' => $mainAuthors,
+            // en caso de que no haya una edicion para el idioma de ese manga, lo marcamos como null
+            // para evitar conflictos
+            'spanishTitle' => $esData['title'] ?? null,
+            'editions' => $esData['editions'] ?? [],
+            'general' => $esData['general'] ?? [],
         ]);
     }
 

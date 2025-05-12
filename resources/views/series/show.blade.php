@@ -23,23 +23,18 @@
                     <p class="text-lg text-gray-600 dark:text-gray-300 mb-2">
                         {{ $media['title']['english'] }}
                     </p>
-                    <div class="flex flex-col">
-                        <p class="text-gray-700 dark:text-gray-400">
-                            <strong>{{ __('Main author: ') }}</strong>
-                        </p>
-                        <x-text class="flex flex-row gap-2 mt-1 !p-0">
-                            @foreach($mainAuthors as $a)
-                                    {{ ucfirst($a['role']) }}:
-                                    <a href="{{ $a['id']
+                    <x-text class="flex flex-row gap-2 mt-1 !p-0">
+                        @foreach($mainAuthors as $a)
+                            {{ ucfirst($a['role']) }}:
+                            <a href="{{ $a['id']
                                 ? route('authors.show', $a['id'])
                                 : '#' }}"
-                                       class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                        {{ $a['name'] }}
-                                    </a>
-                                    @if(! $loop->last) &middot; @endif
-                            @endforeach
-                        </x-text>
-                    </div>
+                               class="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                {{ $a['name'] }}
+                            </a>
+                            @if(! $loop->last) &middot; @endif
+                        @endforeach
+                    </x-text>
                 </div>
             </div>
 
@@ -47,10 +42,14 @@
             <div class="grid grid-cols-4 lg:grid-cols-4 gap-6">
                 {{-- Sidebar info --}}
                 <aside class="space-y-4 col-span-1 bg-white dark:bg-gray-800 p-4 rounded shadow">
-                    <p><strong>Formato:</strong> {{ $media['format'] }}</p>
-                    <p><strong>Estado:</strong> {{ ucfirst(strtolower($media['status'])) }}</p>
-                    <p><strong>Volúmenes:</strong> {{ $media['volumes'] }}</p>
-                    <p><strong>Capítulos:</strong> {{ $media['chapters'] }}</p>
+                    <p><strong>{{__('Format: ')}}</strong> {{ $media['format'] }}</p>
+                    <p><strong>{{__('Status: ')}}</strong> {{ ucfirst(strtolower($media['status'])) }}</p>
+                    @if($media['volumes'])
+                        <p><strong>{{__('Volumes')}}</strong> {{ $media['volumes'] }}</p>
+                    @endif
+                    @if($media['chapters'])
+                        <p><strong>{{__('Chapters')}}</strong> {{ $media['chapters'] }}</p>
+                    @endif
                     @if(!empty($media['genres']))
                         <p><strong>Géneros:</strong><br>
                             <span class="flex flex-wrap gap-2 mt-1">
@@ -64,11 +63,25 @@
                     @endif
                 </aside>
 
-                {{-- Ediciones (vacío por ahora) --}}
+                {{-- Ediciones --}}
                 <section class="col-span-3 bg-white dark:bg-gray-800 p-4 rounded shadow">
-                    <h3 class="text-xl font-semibold mb-4">Ediciones</h3>
-                    <p class="text-gray-500 dark:text-gray-400">Aquí irán las ediciones disponibles.</p>
+                    <h3 class="text-xl font-semibold mb-4">{{__('Editions for this series')}}</h3>
+
+                    @if(count($editions))
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <x-edition-card
+                                :cover="$editions[0]['portada']"
+                                :title="$spanishTitle"
+                                lang="ES"
+                                :count="count($editions)"
+                            />
+                        </div>
+                    @else
+                        <p class="text-center text-gray-500">No hay ediciones disponibles.</p>
+                    @endif
                 </section>
+
+
             </div>
         </x-main-container>
     </div>

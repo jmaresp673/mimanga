@@ -9,10 +9,11 @@
         <x-main-container>
             <form method="POST" action="{{ route('manga.search.perform') }}" class="flex flex-col items-center gap-4">
                 @csrf
-                <input type="text" name="query" class="border rounded p-2 w-1/2" placeholder="{{ __('What are we reading today? ') }}" required>
-                <x-primary-button>
-                    {{ __('Search') }}
-                </x-primary-button>
+                <x-search-input name="query" placeholder="{{ __('What are we reading today? ') }}" required>
+                    <x-search-button>
+                        {{ __('Search') }}
+                    </x-search-button>
+                </x-search-input>
             </form>
         </x-main-container>
     </div>
