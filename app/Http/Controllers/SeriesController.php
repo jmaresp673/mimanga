@@ -104,8 +104,10 @@ class SeriesController extends Controller
         // para obtener las ediciones disponibles en español
         try {
             $esData = $editionService->fetchByRomajiAndLang(
+                $media['title']['native'],
+                'ES',
                 $media['title']['romaji'],
-                'ES'
+                $media['format'] ?? 'MANGA'
             ); // pasamos el romaji para buscar la edicion y el idioma para que lo haga en español
         } catch (\InvalidArgumentException $e) {
             // Si no encuentra la edicion o hay algun problema, marcamos $spanishTitle como null
@@ -116,6 +118,7 @@ class SeriesController extends Controller
 //            abort(400, $e->getMessage());
         }
 
+//        dd($esData);
         return view('series.show', [
             'media' => $media,
             'mainAuthors' => $mainAuthors,

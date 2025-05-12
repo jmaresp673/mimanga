@@ -67,6 +67,7 @@
                 <section class="col-span-3 bg-white dark:bg-gray-800 p-4 rounded shadow">
                     <h3 class="text-xl font-semibold mb-4">{{__('Editions for this series')}}</h3>
 
+{{--                    @dd($general, $editions)--}}
                     @if(count($editions))
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             <x-edition-card

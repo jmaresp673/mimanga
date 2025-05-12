@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use DateTime;
+use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 use InvalidArgumentException;
@@ -15,14 +16,16 @@ class EditionService
     protected array $supported = ['ES', 'EN'];
 
     /**
-     * Fetch ediciones de una serie dado su título en ROMAJI y el idioma.
+     * Fetch ediciones de una serie dado su título en KANJI y el idioma.
      *
+     * @param string $native
      * @param string $romaji
-     * @param string $lang Dos letras: ES o EN
+     * @param string $lang Dos letras: ES / EN
+     * @param string $type Tipo de serie: manga, novela
      * @return array  ['title' => string, 'editions' => array]
      * @throws InvalidArgumentException
      */
-    public function fetchByRomajiAndLang(string $romaji, string $lang): array
+    public function fetchByRomajiAndLang(string $native, string $lang, string $romaji, string $type): array
     {
         $lang = strtoupper($lang);
         if (!in_array($lang, $this->supported, true)) {
@@ -30,7 +33,7 @@ class EditionService
         }
 
         if ($lang === 'ES') {
-            return $this->fetchSpanish($romaji);
+            return $this->fetchSpanish($native, $romaji);
         }
 
         // placeholder para EN
@@ -40,20 +43,33 @@ class EditionService
     /**
      * Lógica de scraping de ediciones en español.
      */
-    protected function fetchSpanish(string $romaji): array
+    protected function fetchSpanish(string $native, string $romaji): array
     {
-        // Limpiar romaji: eliminar signos y paréntesis
+//         Limpiar romaji: eliminar signos y paréntesis
         $cleanRomaji = preg_replace('/[^A-Za-z0-9\s]/', '', $romaji);
         $cleanRomaji = preg_replace('/\s+/', ' ', $cleanRomaji);
         $romaji = trim($cleanRomaji);
+//        dd($romaji);
 
+        $jar = CookieJar::fromArray([
+            'mostrarNSFW' => 'true',
+        ], '.listadomanga.es');
         //
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
-        $resp = Http::get('https://www.listadomanga.es/buscar.php', [
-            'b' => $romaji,
-        ]);
+        $resp = Http::withOptions([
+            'cookies' => $jar,
+            'headers' => [
+                'Referer' => 'https://www.listadomanga.es/buscador.php',
+                'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
+            ],
+        ])->get('https://www.listadomanga.es/buscar.php',
+            ['b' => $native,]);
+//        $resp = Http::get('https://www.listadomanga.es/buscar.php', [
+//            'b' => $romaji,
+//        ]);
 
+//        dd($resp);
         if ($resp->failed()) {
             abort(502, 'No se pudo conectar al buscador de ListadoManga.');
         }
@@ -69,35 +85,45 @@ class EditionService
         $first = $colecciones[0];
         $collectionId = $first['id'];
         $spanishTitle = $first['nombre'];
+//        dd($spanishTitle, $collectionId);
 
         //
         // Scrapear la ficha de colección
         //
         $detailUrl = "https://www.listadomanga.es/coleccion.php?id={$collectionId}";
         $html = Http::get($detailUrl)->body();
+//        dd($html);
 
         $crawler = new Crawler($html);
 
-        // Bloque de datos generales (primera tabla ventana_id1 con <h2> título)
-        $infoHtml = $crawler
-            ->filter('table.ventana_id1')
-            ->eq(0)
-            ->html();
+        try {
+            // Bloque de datos generales (primera tabla ventana* con <h2> título)
+//            dd($crawler);
+            $infoHtml = $crawler
+                ->filter('table[class^="ventana"]')
+                ->eq(0)
+                ->html();
+        } catch (InvalidArgumentException $e) {
+            @dd('Error en el procesamiento html: ' . $e->getMessage());
+        }
+
 
         ///////// DATOS EDICION //////////
         ///
         // Extraemos con expresiones regulares los campos
         preg_match('/<h2>\s*(.*?)\s*<\/h2>/si', $infoHtml, $mTitle);                                                // Título en español
-        preg_match('/<b>Editorial japonesa:<\/b>\s*<a[^>]*>\s*(.*?)\s*<\/a>/si', $infoHtml, $mJPub);                // Editorial japonesa
+        preg_match('/<b>Editorial (?:japonesa|surcoreana):<\/b>\s*<a[^>]*>\s*(.*?)\s*<\/a>/si', $infoHtml, $mJPub);                // Editorial japonesa
         preg_match('/<b>Editorial espa(?:&ntilde;|ñ)ola:<\/b>\s*<a\s+href="[^"]*"[^>]*>([^<]+)<\/a>\s*<a\s+href="([^"]+)"[^>]*>/si', $infoHtml, $mES);  // Editorial española (nombre y web oficial)
         preg_match('/<b>Formato:<\/b>\s*(.*?)(?=<br)/si', $infoHtml, $mFormat);                                     // Formato y dirección de lectura
         preg_match('/<b>Sentido de lectura:<\/b>\s*(.*?)(?=<br)/si', $infoHtml, $mDirection);                       // Sentido de lectura
         preg_match('/<b>Números en japonés:<\/b>\s*(\d+)/si', $infoHtml, $mJNums);                                  // Números editados en japonés y español
         preg_match('/<b>Números en castellano:<\/b>\s*(\d+)(?:.*?)(?=<br|<\/td>)/si', $infoHtml, $mSNums);
+//        dd($mTitle, $mJPub, $mES, $mFormat, $mDirection, $mJNums, $mSNums);
 
         $general = [
             'title' => trim($mTitle[1] ?? ''),
             'original_title' => $romaji, // Usamos la variable existente
+            'native_title' => $native, // Título en japonés / coreano
             'jp_publisher' => trim($mJPub[1] ?? ''), // Solo el nombre
             'es_publisher' => [
                 'name' => trim($mES[1] ?? ''), // Nombre de la editorial
@@ -108,22 +134,21 @@ class EditionService
             'numbers_jp' => $mJNums[1] ?? '',
             'numbers_es' => $mSNums[1] ?? '',
         ];
-        //        @dd($general);
+//                @dd($general);
 
 
 //////////  DATOS VOLUMENES ///////////
 
-        $nodes = $crawler->filter('table[style*="width: 184px"][class="ventana_id1"]');
-//        @dd($nodes->count());
+        $nodes = $crawler->filter('table[style*="width: 184px"][class^="ventana"]');
+//        dd($nodes->count());
 
         try {
             // Convertir los nodos a elementos DOM independientes
             $domElements = $nodes->getIterator()->getArrayCopy();
 
-            $editions = array_map(function ($domElement) {
+            $editions = array_map(function ($domElement) use ($general) {
                 $table = new Crawler($domElement);
                 $cell = $table->filter('td.cen');
-//                @dd($cell);
 
                 // Validar elementos esenciales antes de procesar
                 if ($cell->count() === 0) return null;
@@ -135,40 +160,47 @@ class EditionService
 
                 // Procesar texto crudo
                 $raw = $cell->html();
-                $cleanText = strip_tags(preg_replace('/<a[^>]*>.*?<\/a>/', '', $raw));
-                $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
+                $cleanText = strip_tags(preg_replace('/<a[^>]*>.*?<\/a>/', ' ', $raw), '<br>');
+//                $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
+//                dd($cleanText);
 
                 // Extraer datos
-                preg_match('/nº?\s*(\d+)/i', $cleanText, $mVol);
+                if ($general['numbers_es'] === '1') {
+                    $mVol[1] = 1;
+                } else {
+                    preg_match('/nº?\s*(\d+)/i', $cleanText, $mVol);
+                }
                 preg_match('/(\d+)\s*p(?:á|a)ginas/i', $cleanText, $mPages);
                 preg_match('/(\d+,\d{2})\s*€/i', $cleanText, $mPrice);
-
 //                @dd($img, $mVol, $mPages, $mPrice[1]);
-                // Procesar fecha
-                $date = null;
-                preg_match('/<a[^>]*>(\d+\s+[A-Za-z]+\s+\d{4})<\/a>/', $raw, $mDate);
-                $fechaTexto = $mDate[1] ?? preg_replace('/.*?(\d+\s+[A-Za-z]+\s+\d{4}).*/', '$1', $cleanText);
 
-                if ($fechaTexto) {
+                // Procesar fecha de edición (día + mes año)
+                $date = null;
+
+                // en html: 29 <a ...>Julio 2022</a>
+                if (preg_match('/(\d+)\s*<a[^>]*>\s*([A-Za-z]+)\s+(\d{4})\s*<\/a>/', $raw, $mDate)) {
+                    $day = (int)$mDate[1];
+                    $month = ucfirst(strtolower(trim($mDate[2])));
+                    $year = (int)$mDate[3];
+
                     $months = [
                         'Enero' => 1, 'Febrero' => 2, 'Marzo' => 3, 'Abril' => 4,
                         'Mayo' => 5, 'Junio' => 6, 'Julio' => 7, 'Agosto' => 8,
                         'Septiembre' => 9, 'Octubre' => 10, 'Noviembre' => 11, 'Diciembre' => 12
                     ];
 
-                    if (preg_match('/(\d+)\s+([A-Za-z]+)\s+(\d{4})/', $fechaTexto, $mFecha)) {
-                        $mes = ucfirst(strtolower($mFecha[2])); // Normalizar nombre del mes
+                    if (isset($months[$month])) {
                         try {
-                            $date = DateTime::createFromFormat(
-                                'j n Y',
-                                sprintf('%d %d %d', $mFecha[1], $months[$mes] ?? 1, $mFecha[3])
-                            )->format('Y-m-d');
+                            $date = DateTime::createFromFormat('Y-m-d', sprintf('%04d-%02d-%02d', $year, $months[$month], $day))
+                                ->format('Y-m-d');
                         } catch (\Exception $e) {
-                            // Registrar error si es necesario
+                            $date = null;
                         }
                     }
                 }
 
+
+//                dd($mVol, $mPages, $mPrice, $date, $img);
                 return [
                     'volumen' => $mVol[1] ?? null,
                     'paginas' => $mPages[1] ?? null,
@@ -178,6 +210,7 @@ class EditionService
                 ];
             }, $domElements);
 
+//            dd($editions);
             // Filtrar y formatear resultados
             $editions = array_values(array_filter($editions, function ($item) {
                 return $item !== null && $item['volumen'] !== null && $item['portada'] !== null;
@@ -189,6 +222,7 @@ class EditionService
             @dd('Error en el procesamiento: ' . $e->getMessage());
         }
         // 4) Devolver el array con los datos de edicion, titulo, y volumenes
+//        dd($general);
         return [
             'title' => $spanishTitle, // titulo en español ( también está en general )
             'editions' => $editions, //  Listado de ediciones (volumen, páginas, precio, fecha, portada)
