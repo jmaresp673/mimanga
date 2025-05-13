@@ -10,9 +10,6 @@ use InvalidArgumentException;
 
 class EditionService
 {
-    /**
-     * Idiomas soportados.
-     */
     protected array $supported = ['ES', 'EN'];
 
     /**
@@ -33,17 +30,72 @@ class EditionService
         }
 
         if ($lang === 'ES') {
-            return $this->fetchSpanish($native, $romaji);
+            return $this->fetchSpanish($native, $romaji, $type);
         }
 
         // placeholder para EN
         throw new InvalidArgumentException("Lógica para '{$lang}' aún no implementada.");
     }
 
+
+    /**
+     * Obtiene la edición segun tipo e idioma (MANGA|NOVEL|MANHWA).
+     *
+     * @param array $collections Array de ['id'=>int, 'title'=>string, 'url'=>string]
+     * @param string $type 'MANGA' o 'NOVEL'
+     * @return array|null
+     */
+    protected function selectCollection(array $collections, string $type): ?array
+    {
+        // 1) Eliminar "Anime Comic(s)"
+        $filtered = array_filter($collections, fn($c) => !preg_match('/Anime\s+Comics?/i', $c['title']));
+
+        // 2) Descarta Català si existe Castellano | Català
+        $hasCast = collect($filtered)->contains(fn($c) => str_contains($c['title'], '(Castellano)'));
+        if ($hasCast) {
+            $filtered = array_filter($filtered, fn($c) => !str_contains($c['title'], '(Català)'));
+        }
+
+        // 3) Filtrar por type en paréntesis según MANGA, MANHWA, NOVELA(S)
+        $typeMap = [
+            'MANGA' => ['manga', 'manhwa'],
+            'NOVEL' => ['novela', 'novelas'],
+        ];
+        $keywords = $typeMap[$type] ?? [];
+        if (!empty($keywords)) {
+            $matches = array_filter($filtered, function ($c) use ($keywords) {
+                foreach ($keywords as $n) {
+                    if (preg_match('/\(' . preg_quote(ucfirst($n), '/') . '\)/i', $c['title'])) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+//            dd( "colecciones", $matches);
+
+            if (!empty($matches)) {
+                $filtered = $matches;
+            }
+        }
+
+        // 4) Si quedan varias, elegir la de título más corto
+        if (!empty($filtered)) {
+            usort($filtered, function ($a, $b) {
+                $cleanA = trim(preg_replace('/\s*\([^)]*\)/', '', $a['title']));
+                $cleanB = trim(preg_replace('/\s*\([^)]*\)/', '', $b['title']));
+                return strlen($cleanA) <=> strlen($cleanB);
+            });
+            return array_shift($filtered);
+        }
+//        dd($filtered);
+        return null;
+    }
+
+
     /**
      * Lógica de scraping de ediciones en español.
      */
-    protected function fetchSpanish(string $native, string $romaji): array
+    protected function fetchSpanish(string $native, string $romaji, string $type): array
     {
 //         Limpiar romaji: eliminar signos y paréntesis
         $cleanRomaji = preg_replace('/[^A-Za-z0-9\s]/', '', $romaji);
@@ -51,47 +103,66 @@ class EditionService
         $romaji = trim($cleanRomaji);
 //        dd($romaji);
 
-        $jar = CookieJar::fromArray([
-            'mostrarNSFW' => 'true',
-        ], '.listadomanga.es');
+        // Limpiar kanji o nativo y elimina "。"
+//        $cleanNative = preg_replace('/[-]/', '', $native);
+        $native = preg_replace('/\s+/', ' ', $native);
+        $native = preg_replace('/。/', '', $native);
+//        dd($native);
+
+
         //
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
-        $resp = Http::withOptions([
-            'cookies' => $jar,
-            'headers' => [
-                'Referer' => 'https://www.listadomanga.es/buscador.php',
-                'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
-            ],
-        ])->get('https://www.listadomanga.es/buscar.php',
-            ['b' => $native,]);
-//        $resp = Http::get('https://www.listadomanga.es/buscar.php', [
-//            'b' => $romaji,
-//        ]);
-
-//        dd($resp);
+        $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
         if ($resp->failed()) {
             abort(502, 'No se pudo conectar al buscador de ListadoManga.');
         }
 
         $json = $resp->json();
-        $colecciones = $json['colecciones'] ?? [];
+
+        // Normalizar formato: mantener id, title, url
+        $colecciones = array_map(fn($item) => [
+            'id' => (int)$item['id'],
+            'title' => trim($item['nombre']),
+            'url' => 'https://www.listadomanga.es/coleccion.php?id=' . $item['id'],
+        ], $json['colecciones']);
+//        dd($colecciones);
+
+        // Seleccionar la mejor opcion
+        $best = $this->selectCollection($colecciones, strtoupper($type));
+//        dd($best);
+        $colecciones = $best ? $best : []; // si no hay coincidencias, devolver un array vacío
 
         if (empty($colecciones)) {
-            abort(404, 'No se encontró la serie en ListadoManga.es');
+            return $colecciones;
+//            abort(404, 'No se encontró la serie en ListadoManga.es');
         }
 
+        $collectionId = $colecciones['id'];
+        $spanishTitle = $colecciones['title'];
+        $detailUrl = $colecciones['url'];
+
         // Nos quedamos con la primera colección
-        $first = $colecciones[0];
-        $collectionId = $first['id'];
-        $spanishTitle = $first['nombre'];
+//        $first = $colecciones[0];
+//        $collectionId = $first['id'];
+//        $spanishTitle = $first['nombre'];
 //        dd($spanishTitle, $collectionId);
 
+
+        $jar = CookieJar::fromArray([
+            'mostrarNSFW' => 'true',
+        ], '.listadomanga.es');
         //
         // Scrapear la ficha de colección
         //
-        $detailUrl = "https://www.listadomanga.es/coleccion.php?id={$collectionId}";
-        $html = Http::get($detailUrl)->body();
+        $html = Http::withOptions([
+            'cookies' => $jar,
+            'headers' => [
+                'Referer' => 'https://www.listadomanga.es/buscador.php',
+                'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
+            ],
+        ])->get($detailUrl)->body();
+//        $html = Http::get($detailUrl)->body();
 //        dd($html);
 
         $crawler = new Crawler($html);
