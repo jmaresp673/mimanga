@@ -50,11 +50,11 @@ class EditionService
         // 1) Eliminar "Anime Comic(s)"
         $filtered = array_filter($collections, fn($c) => !preg_match('/Anime\s+Comics?/i', $c['title']));
 
-        // 2) Descarta Català si existe Castellano | Català
-        $hasCast = collect($filtered)->contains(fn($c) => str_contains($c['title'], '(Castellano)'));
-        if ($hasCast) {
-            $filtered = array_filter($filtered, fn($c) => !str_contains($c['title'], '(Català)'));
-        }
+        // 2) Descarta Català
+//        $hasCast = collect($filtered)->contains(fn($c) => str_contains($c['title'], '(Castellano)'));
+//        if ($hasCast) {
+        $filtered = array_filter($filtered, fn($c) => !str_contains($c['title'], '(Català)'));
+//        }
 
         // 3) Filtrar por type en paréntesis según MANGA, MANHWA, NOVELA(S)
         $typeMap = [
@@ -62,7 +62,8 @@ class EditionService
             'NOVEL' => ['novela', 'novelas'],
         ];
         $keywords = $typeMap[$type] ?? [];
-        if (!empty($keywords)) {
+//        dd($keywords);
+        if (!empty($keywords && $keywords[0] === 'novela')) {
             $matches = array_filter($filtered, function ($c) use ($keywords) {
                 foreach ($keywords as $n) {
                     if (preg_match('/\(' . preg_quote(ucfirst($n), '/') . '\)/i', $c['title'])) {
@@ -78,6 +79,7 @@ class EditionService
             }
         }
 
+//        dd($filtered);
         // 4) Si quedan varias, elegir la de título más corto
         if (!empty($filtered)) {
             usort($filtered, function ($a, $b) {
