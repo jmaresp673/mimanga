@@ -5,6 +5,7 @@ namespace App\Services;
 use DateTime;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 use InvalidArgumentException;
 
@@ -115,9 +116,15 @@ class EditionService
         //
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
-        $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
-        if ($resp->failed()) {
-            abort(502, 'No se pudo conectar al buscador de ListadoManga.');
+        try {
+            $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
+            if ($resp->failed()) {
+                abort(502, 'No se pudo conectar al buscador de ListadoManga.');
+            }
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            // lanzar 404
+            abort(502, 'Ha ocurrido un error, por favor intentelo de nuevo mas tarde.');
         }
 
         $json = $resp->json();
@@ -157,15 +164,21 @@ class EditionService
         //
         // Scrapear la ficha de colección
         //
-        $html = Http::withOptions([
-            'cookies' => $jar,
-            'headers' => [
-                'Referer' => 'https://www.listadomanga.es/buscador.php',
-                'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
-            ],
-        ])->get($detailUrl)->body();
+        try {
+            $html = Http::withOptions([
+                'cookies' => $jar,
+                'headers' => [
+                    'Referer' => 'https://www.listadomanga.es/buscador.php',
+                    'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
+                ],
+            ])->get($detailUrl)->body();
 //        $html = Http::get($detailUrl)->body();
 //        dd($html);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            // lanzar error de servidor
+            abort(502, 'Ha ocurrido un error, por favor intentelo de nuevo mas tarde.');
+        }
 
         $crawler = new Crawler($html);
 
@@ -203,6 +216,7 @@ class EditionService
                 'web' => trim($mES[2] ?? '') // Primer enlace (web oficial)
             ],
             'format' => trim($mFormat[1] ?? ''),
+            'type' => $type, // MANGA o NOVELA
             'reading_direction' => trim($mDirection[1] ?? ''),
             'numbers_jp' => $mJNums[1] ?? '',
             'numbers_localized' => $mSNums[1] ?? '',

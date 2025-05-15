@@ -163,7 +163,7 @@ class SeriesController extends Controller
 
         // 3) Extraer autores principales (story, art, story & art)
         // Queremos descartar traductores y otros roles redundantes de la API
-        $validRoles = ['story & art', 'story', 'art'];
+        $validRoles = ['story & art', 'story', 'art', 'illustration'];
         $mainAuthors = [];
         if (!empty($media['staff']['nodes'])) {
             foreach ($media['staff']['nodes'] as $idx => $node) {

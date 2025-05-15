@@ -18,6 +18,7 @@ class Edition extends Model
         'language',
         'edition_total_volumes',
         'format',
+        'type',
         'country_code'
     ];
 

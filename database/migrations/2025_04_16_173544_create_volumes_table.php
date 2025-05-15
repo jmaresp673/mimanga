@@ -22,7 +22,8 @@ return new class extends Migration {
 
             $table->integer('volume_number');
             $table->integer('total_pages')->nullable();
-            $table->string('isbn');
+            $table->string('isbn')->nullable();
+            $table->decimal('price', 5, 2)->nullable();
             $table->date('release_date')->nullable();
             $table->string('cover_image_url')->nullable();
             $table->string('google_books_id')->nullable();

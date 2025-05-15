@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('language');
             $table->integer('edition_total_volumes')->nullable();
             $table->string('format')->nullable();
+            $table->string('type')->nullable(); // Manga, Novel, etc.
             $table->string('country_code', 2)->nullable(); // ISO 3166-1 alpha-2 (ej: 'ES', 'US')
             $table->timestamps();
         });
