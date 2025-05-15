@@ -11,6 +11,7 @@ class Series extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'title',
         'romaji_title',
         'native_title',
@@ -19,6 +20,7 @@ class Series extends Model
         'status',
         'total_volumes',
         'cover_image_url',
+        'banner_image_url',
         'start_year',
         'end_year',
         'type'
@@ -36,11 +38,14 @@ class Series extends Model
 
     public function genres()
     {
-        return $this->belongsToMany(Genre::class, 'series_genre');
+        return $this->belongsToMany(Genre::class, 'series_genre')
+            ->using(SeriesGenre::class);
     }
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'author_series')->withPivot('role');
+        return $this->belongsToMany(Author::class, 'author_series')
+            ->using(AuthorSeries::class)
+            ->withPivot('role');
     }
 }

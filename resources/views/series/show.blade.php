@@ -71,10 +71,13 @@
                     @if(count($editions))
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             <x-edition-card
+                                :id="$media['id'].'ES'"
                                 :cover="$editions[0]['portada']"
                                 :title="$spanishTitle"
                                 lang="ES"
-                                :count="count($editions)"
+                                :count="$general['numbers_localized']"
+                                :edition="$general"
+                                :volumes="$editions"
                             />
                         </div>
                     @else

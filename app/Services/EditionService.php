@@ -19,7 +19,7 @@ class EditionService
      * @param string $romaji
      * @param string $lang Dos letras: ES / EN
      * @param string $type Tipo de serie: manga, novela
-     * @return array  ['title' => string, 'editions' => array]
+     * @return array  ['title' => string, 'editions' => array, 'general' => array]
      * @throws InvalidArgumentException
      */
     public function fetchByRomajiAndLang(string $native, string $lang, string $romaji, string $type): array
@@ -198,14 +198,14 @@ class EditionService
             'original_title' => $romaji, // Usamos la variable existente
             'native_title' => $native, // Título en japonés / coreano
             'jp_publisher' => trim($mJPub[1] ?? ''), // Solo el nombre
-            'es_publisher' => [
+            'localized_publisher' => [
                 'name' => trim($mES[1] ?? ''), // Nombre de la editorial
                 'web' => trim($mES[2] ?? '') // Primer enlace (web oficial)
             ],
             'format' => trim($mFormat[1] ?? ''),
             'reading_direction' => trim($mDirection[1] ?? ''),
             'numbers_jp' => $mJNums[1] ?? '',
-            'numbers_es' => $mSNums[1] ?? '',
+            'numbers_localized' => $mSNums[1] ?? '',
         ];
 //                @dd($general);
 
@@ -238,7 +238,7 @@ class EditionService
 //                dd($cleanText);
 
                 // Extraer datos
-                if ($general['numbers_es'] === '1') {
+                if ($general['numbers_localized'] === '1') {
                     $mVol[1] = 1;
                 } else {
                     preg_match('/nº?\s*(\d+)/i', $cleanText, $mVol);

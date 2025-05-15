@@ -19,8 +19,9 @@ return new class extends Migration
             $table->text('synopsis');
             $table->integer('anilist_id')->unique();
             $table->string('status');
-            $table->integer('total_volumes');
+            $table->integer('total_volumes')->nullable();
             $table->string('cover_image_url')->nullable();
+            $table->string('banner_image_url')->nullable();
             $table->year('start_year');
             $table->year('end_year')->nullable();
             $table->string('type')->nullable(); // Ejemplo: 'MANGA', 'NOVEL', 'ONE_SHOT', etc.

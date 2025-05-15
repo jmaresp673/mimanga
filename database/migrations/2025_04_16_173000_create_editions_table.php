@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('editions', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary(); // anilist_id + lang
             $table->foreignId('series_id')->constrained()->cascadeOnDelete();
             $table->string('localized_title');
             $table->foreignId('publisher_id')->constrained()->cascadeOnDelete();

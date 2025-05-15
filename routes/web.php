@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\EditionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SeriesController;
 use Illuminate\Support\Facades\Mail;
@@ -36,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/series/{anilistId}', [SeriesController::class, 'show'])->name('series.show');
         Route::post('/series/{anilistId}/add', [SeriesController::class, 'add'])->name('series.add');
         Route::post('/series/{anilistId}/remove', [SeriesController::class, 'remove'])->name('series.remove');
+    });
+
+    //Edition Routes
+    Route::controller(EditionController::class)->group(function () {
+        Route::get('/editions/{id}', [EditionController::class, 'show'])->name('editions.show');
     });
 
 });

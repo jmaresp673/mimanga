@@ -28,6 +28,7 @@ class SeriesFactory extends Factory
             'status' => $this->faker->randomElement(['FINISHED', 'RELEASING', 'HIATUS']),
             'total_volumes' => $this->faker->numberBetween(1, 50),
             'cover_image_url' => $this->faker->imageUrl(),
+            'banner_image_url' => $this->faker->imageUrl(),
             'start_year' => $this->faker->year(),
             'end_year' => $this->faker->optional()->year(),
             'type' => $this->faker->randomElement(['MANGA', 'NOVEL', 'ONE_SHOT']),

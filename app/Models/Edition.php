@@ -11,6 +11,7 @@ class Edition extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id', // el id será el anilist_id concatenado al codigo de idioma, ej: 123456ES
         'series_id',
         'localized_title',
         'publisher_id',

@@ -26,6 +26,7 @@ class EditionFactory extends Factory
     public function definition(): array
     {
         return [
+            'id' => $this->faker->unique()->randomNumber(8) . $this->faker->randomElement(['ES', 'EN']),
             'series_id' => Series::factory(),
             'localized_title' => $this->faker->sentence(3),
             'publisher_id' => Publisher::factory(),
