@@ -45,6 +45,7 @@ class MangaSearchController extends Controller
                     coverImage {
                         large
                     }
+                    bannerImage
                     startDate {
                         year
                     }

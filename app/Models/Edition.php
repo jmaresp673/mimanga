@@ -14,6 +14,7 @@ class Edition extends Model
         'id', // el id será el anilist_id concatenado al codigo de idioma, ej: 123456ES
         'series_id',
         'localized_title',
+        'sinopsis',
         'publisher_id',
         'language',
         'edition_total_volumes',

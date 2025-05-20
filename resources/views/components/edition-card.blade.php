@@ -6,7 +6,7 @@
     'count'         // Cantidad de volúmenes editados
 ])
 
-<a href="{{ route('editions.show', ['id' => $id]) }}"
+<a href="{{ route('editions.show', ['id' => $id, 'slug' => \Illuminate\Support\Str::slug($title)]) }}"
    class="group w-full h-full flex flex-col items-center justify-center text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200 ease-in-out">
     {{-- Tarjeta de edición --}}
     <div class="border rounded p-4 shadow-md bg-white dark:bg-gray-800 flex flex-col items-center">

@@ -82,6 +82,7 @@ class EditionController extends Controller
                     $edition->id = $editionId;
                     $edition->series_id = $anilistId;
                     $edition->localized_title = $data['title'];
+                    $edition->sinopsis = $data['general']['sinopsis'] ?? "No hay sinopsis disponible.";
                     $edition->publisher_id = $existingPublisher->id;
                     $edition->language = $lang;
                     $edition->edition_total_volumes = $data['general']['numbers_localized'];
@@ -97,6 +98,7 @@ class EditionController extends Controller
                     $updatedEdition = $existingEdition->fill([
                         'series_id' => $anilistId,
                         'localized_title' => $data['title'],
+                        'sinopsis' => $data['general']['sinopsis'] ?? "No hay sinopsis disponible.",
                         'publisher_id' => $existingPublisher->id,
                         'language' => $lang,
                         'edition_total_volumes' => $data['general']['numbers_localized'],
@@ -184,13 +186,19 @@ class EditionController extends Controller
     public function show(string $id)
     {
         // Comprobar si la edición existe en la base de datos
-//        $edition = Edition::where('id', $id)->first();
-//        if (!$edition) {
-//            return response()->json(['message' => 'Edition not found'], 404);
-//        }
-//
-//        return response()->json($edition, 200);
-//    }
+        $edition = Edition::where('id', $id)->first();
+        if (!$edition) {
+            return response()->json(['message' => 'Edition not found'], 404);
+        }
+        // get de volumenes de la serie mediante metodo volumes()
+        $volumes = $edition->volumes()->with(['series', 'edition'])->get();
+
+        // vista
+//        dd($edition, $volumes);
+        return view('editions.show', [
+            'edition' => $edition,
+            'volumes' => $volumes,
+        ]);
     }
 
     /**

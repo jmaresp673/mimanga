@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('id')->primary(); // anilist_id + lang
             $table->foreignId('series_id')->constrained()->cascadeOnDelete();
             $table->string('localized_title');
+            $table->text('sinopsis')->nullable();
             $table->foreignId('publisher_id')->constrained()->cascadeOnDelete();
             $table->string('language');
             $table->integer('edition_total_volumes')->nullable();

@@ -223,6 +223,36 @@ class EditionService
         ];
 //                @dd($general);
 
+        ///////// SINÓPSIS //////////
+        $sinopsis = 'No hay sinopsis disponible.'; // Valor por defecto
+
+        try {
+            $sinopsisTable = $crawler->filter('table[class^="ventana"]')->reduce(function (Crawler $node) {
+                return $node->filter('h2:contains("Sinopsis")')->count() > 0;
+            });
+
+            if ($sinopsisTable->count() > 0) {
+                // Eliminar el h2 y su contenido (sinopsis de....)
+                $sinopsisTable->first()->filter('h2')->each(function (Crawler $node) {
+                    $node->getNode(0)->parentNode->removeChild($node->getNode(0));
+                });
+
+                // Extraer contenido y limpiar
+                $sinopsisText = $sinopsisTable->first()->filter('td.izq')->html();
+
+                // Eliminar hr y espacios innecesarios
+//                $sinopsis = str_replace(['<hr>', '<hr/>', '<hr />'], '', $sinopsisText);
+                $sinopsis = strip_tags($sinopsisText); // Eliminar cualquier etiqueta restante
+//                $sinopsis = trim(preg_replace('/\s+/', ' ', $sinopsis)); // Espacios múltiples a uno
+                $sinopsis = str_replace('  ', ' ', $sinopsis); // Dobles espacios por uno
+//                $sinopsis = html_entity_decode($sinopsis); // Convertir entidades HTML a caracteres (ej. &nbsp; a espacio)
+            }
+        } catch (\Exception $e) {
+            Log::error('Error extrayendo sinopsis: ' . $e->getMessage());
+        }
+
+        $general['sinopsis'] = $sinopsis;
+//        dd($general, $sinopsisText);
 
 //////////  DATOS VOLUMENES ///////////
 

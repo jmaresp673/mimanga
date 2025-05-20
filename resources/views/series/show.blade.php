@@ -35,6 +35,9 @@
                             @if(! $loop->last) &middot; @endif
                         @endforeach
                     </x-text>
+                    <x-text>
+                        {!! $media['description'] !!}
+                    </x-text>
                 </div>
             </div>
 
@@ -64,25 +67,31 @@
                 </aside>
 
                 {{-- Ediciones --}}
-                <section class="col-span-3 bg-white dark:bg-gray-800 p-4 rounded shadow">
-                    <h3 class="text-xl font-semibold mb-4">{{__('Editions for this series')}}</h3>
+                <section class="col-span-3 bg-white dark:bg-gray-800 p-4 rounded shadow relative overflow-hidden"
+                         style="background-image: url('{{ $media['bannerImage'] }}'); background-size: cover; background-position: center;">
+                    <!-- Capa oscura (solo fondo) -->
+                    <div class="absolute inset-0 bg-black opacity-40 z-0"></div>
 
-{{--                    @dd($general, $editions)--}}
-                    @if(count($editions))
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            <x-edition-card
-                                :id="$media['id'].'ES'"
-                                :cover="$editions[0]['portada']"
-                                :title="$spanishTitle"
-                                lang="ES"
-                                :count="$general['numbers_localized']"
-                                :edition="$general"
-                                :volumes="$editions"
-                            />
-                        </div>
-                    @else
-                        <p class="text-center text-gray-500">No hay ediciones disponibles.</p>
-                    @endif
+                    <!-- Contenido (debe estar en una capa superior) -->
+                    <div class="relative z-10 space-y-4"> <!-- Añade posición relativa y z-index mayor -->
+                        <h3 class="text-xl font-semibold">{{__('Editions for this series')}}</h3>
+
+                        @if(count($editions))
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <x-edition-card
+                                    :id="$media['id'].'ES'"
+                                    :cover="$editions[0]['portada']"
+                                    :title="$spanishTitle"
+                                    lang="ES"
+                                    :count="$general['numbers_localized']"
+                                    :edition="$general"
+                                    :volumes="$editions"
+                                />
+                            </div>
+                        @else
+                            <p class="text-center text-gray-500">No hay ediciones disponibles.</p>
+                        @endif
+                    </div>
                 </section>
 
 

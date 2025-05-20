@@ -41,7 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Edition Routes
     Route::controller(EditionController::class)->group(function () {
-        Route::get('/editions/{id}', [EditionController::class, 'show'])->name('editions.show');
+        Route::get('/editions/{id}/{slug}', [EditionController::class, 'show'])->name('editions.show');
     });
 
 });
