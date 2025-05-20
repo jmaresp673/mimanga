@@ -32,7 +32,7 @@
                         {!! $edition->publisher->name !!}
                     </p>
                     <x-text class="flex flex-row justify-between mt-1 !p-0 items-center">
-                        {!! $edition->edition_total_volumes !!} volumenes,<span
+                        {!! $edition->edition_total_volumes !!} volumenes<span
                             class="text-xs text-gray-300">{!! $edition->format !!}</span>
                     </x-text>
                     <x-text class="text-justify">
@@ -53,10 +53,11 @@
                         <x-text>
                             {{ count($volumes) }} {{__('volumes')}}
                         </x-text>
-                        <div class="flex flex-row flex-wrap gap-4">
+                        <div class="flex flex-row flex-wrap gap-4 justify-center">
                             @foreach($volumes as $volume)
                                 <x-volume-card
                                     :volume="$volume"
+                                    :edition="$edition"
                                 />
                             @endforeach
                         </div>
