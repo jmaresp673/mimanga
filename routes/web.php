@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\EditionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SeriesController;
+use App\Http\Controllers\UserVolumeController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MangaSearchController;
@@ -42,6 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Edition Routes
     Route::controller(EditionController::class)->group(function () {
         Route::get('/editions/{id}/{slug}', [EditionController::class, 'show'])->name('editions.show');
+    });
+
+    //User - Volume Routes
+    Route::controller(UserVolumeController::class)->group(function () {
+        Route::get('/users/{user}/volumes/{volume}/check-status', [UserVolumeController::class, 'checkStatus']);
+        Route::post('/users/{user}/volumes/{volume}/add-to-library', [UserVolumeController::class, 'addToLibrary']);
+        Route::post('/users/{user}/volumes/{volume}/add-to-wishlist', [UserVolumeController::class, 'addToWishlist']);
+        Route::delete('/users/{user}/volumes/{volume}/remove', [UserVolumeController::class, 'destroy']);
     });
 
 });
