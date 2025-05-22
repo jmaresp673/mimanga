@@ -34,3 +34,19 @@
         {{ $slot }}
     </div>
 </div>
+
+
+{{--
+MODO DE USO:
+
+<x-hover-text position="bottom">
+    <x-slot name="trigger"> <!-- Elemento que activa el hover -->
+        <button class="p-2 bg-blue-500 text-white">
+            Botón con tooltip
+        </button>
+    </x-slot>
+
+    ¡Este es el mensaje del tooltip!
+</x-hover-text>
+
+--}}

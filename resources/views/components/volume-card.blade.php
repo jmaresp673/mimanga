@@ -2,11 +2,6 @@
     'volume' => \App\Models\Volume::class,
     'edition' => \App\Models\Edition::class
 ])
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    });
-</script>
 
 <div x-data="{
     openModal: false,
@@ -94,7 +89,7 @@
                         <x-slot name="trigger">
                             <button x-on:click="openModal = false; isHovered = false"
                                     class="relative flex justify-center items-center rounded-full h-8 w-8 bg-red-600 text-white hover:text-red-600 hover:bg-white text-2xl transition-colors duration-300">
-                                &times;
+                                <i class="fa-solid fa-xmark"></i>
                             </button>
                         </x-slot>
                         {{ __('Close') }}
@@ -129,66 +124,29 @@
                             </div>
 
                             {{-- Botones de accion --}}
-                            <div x-data="{status: null,
-                            async checkStatus() {
-                                const response = await fetch(`/users/{{ auth()->id() }}/volumes/{{ $volume->id }}/check-status`);
-                                const data = await response.json();
-                                this.status = data.status;
-                            },
-                            async addToLibrary() {
-                                await fetch(`/users/{{ auth()->id() }}/volumes/{{ $volume->id }}/add-to-library`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRF-TOKEN': window.csrfToken,
-                                        'Content-Type': 'application/json'
-                                    }
-                                }); await this.checkStatus();},
-                            async addToWishlist() {
-                                await fetch(`/users/{{ auth()->id() }}/volumes/{{ $volume->id }}/add-to-wishlist`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRF-TOKEN': window.csrfToken,
-                                        'Content-Type': 'application/json'
-                                    }
-                                }); await this.checkStatus(); },
-                            async remove() {
-                                await fetch(`/users/{{ auth()->id() }}/volumes/{{ $volume->id }}/remove`, {
-                                    method: 'DELETE',
-                                    headers: {
-                                        'X-CSRF-TOKEN': window.csrfToken,
-                                        'Content-Type': 'application/json'
-                                    }
-                                }); await this.checkStatus(); }
-                        }" x-init="checkStatus">
-                                <!-- Botones Dinámicos -->
+                            <div x-data="volumeActions({{ auth()->id() }}, {{ $volume->id }})"
+                                 x-init="checkStatus"
+                                 class="flex gap-2">
+
                                 <template x-if="status === null">
-                                    <div class="space-x-2">
-                                        <x-hover-text>
+                                    <div class="flex gap-2">
+                                        <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToLibrary"
-                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="h-5 w-5 inline m-auto" fill="none"
-                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              stroke-width="2"
-                                                              d="M12 4v16m8-8H4"/>
-                                                    </svg>
+                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold
+                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                    <i class="fa-solid fa-square-plus"></i>
                                                 </button>
                                             </x-slot>
                                             {{ __('Add to library') }}
                                         </x-hover-text>
-                                        <x-hover-text>
+
+                                        <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToWishlist"
-                                                        class="btn-secondary rounded-full p-2 w-10 h-10 font-bold">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="h-5 w-5 inline m-auto" fill="none"
-                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              stroke-width="2"
-                                                              d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/>
-                                                    </svg>
+                                                        class="btn-secondary rounded-full p-2 w-10 h-10 font-bold
+                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                    <i class="fa-solid fa-heart-circle-plus"></i>
                                                 </button>
                                             </x-slot>
                                             {{ __('Add to wish list') }}
@@ -197,54 +155,38 @@
                                 </template>
 
                                 <template x-if="status === false">
-                                    <div class="space-x-2">
-                                        <x-hover-text>
+                                    <div class="flex gap-2">
+                                        <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToLibrary"
-                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="h-5 w-5 inline m-auto"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              stroke-width="2"
-                                                              d="M12 4v16m8-8H4"/>
-                                                    </svg>
+                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold
+                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                    <i class="fa-solid fa-square-plus"></i>
                                                 </button>
                                             </x-slot>
-                                            {{ __('Add to library') }}
+                                            {{ __('Move to library') }}
                                         </x-hover-text>
-                                        <x-hover-text>
+
+                                        <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="remove"
-                                                        class="btn-danger rounded-full p-2 w-10 h-10 font-bold">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         class="h-5 w-5 inline m-auto"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                              stroke-width="2"
-                                                              d="M6 18L18 6M6 6l12 12"/>
-                                                    </svg>
+                                                        class="btn-danger rounded-full p-2 w-10 h-10 font-bold
+                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                    <i class="fa-solid fa-heart-circle-minus"></i>
                                                 </button>
                                             </x-slot>
-                                            {{ __('Remove from wish list') }}
+                                            {{ __('Remove from wishlist') }}
                                         </x-hover-text>
                                     </div>
                                 </template>
 
                                 <template x-if="status === true">
-                                    <x-hover-text>
+                                    <x-hover-text position="top">
                                         <x-slot name="trigger">
                                             <button @click="remove"
-                                                    class="btn-danger rounded-full p-2 w-10 h-10 font-bold">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline m-auto"
-                                                     fill="none"
-                                                     viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
+                                                    class="btn-danger rounded-full p-2 w-10 h-10 font-bold
+                               transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </x-slot>
                                         {{ __('Remove from library') }}

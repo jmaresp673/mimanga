@@ -3,11 +3,6 @@
     'edition',
     'volumes',
 ])
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    });
-</script>
 <x-app-layout>
 
     {{--    <x-slot name="header">--}}
