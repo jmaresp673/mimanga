@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/search', [MangaSearchController::class, 'search'])->name('manga.search.dynamic');
     Route::post('/', [MangaSearchController::class, 'search'])->name('manga.search.perform');
 
+    // Libary Routes
+    Route::get('/library', [UserVolumeController::class, 'index'])->name('user.index');
+
     //Profile Controller
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');

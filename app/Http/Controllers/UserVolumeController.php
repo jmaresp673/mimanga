@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateUserVolumeRequest;
 use App\Models\User;
+use App\Models\Edition;
 use App\Models\UserVolume;
 use App\Http\Requests\StoreUserVolumeRequest;
 use App\Models\Volume;
@@ -97,11 +98,27 @@ class UserVolumeController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Funcion libary, usa userVolume para mostrar todos los volumenes del usuario
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $user = $request->user();
+        $volumes = $user->volumes()
+            ->with(['edition'])
+            ->wherePivotNotNull('purchase_date')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $whislist = $user->volumes()
+            ->with(['edition'])
+            ->wherePivotNull('purchase_date')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return view('manga.library', [
+            'volumes' => $volumes,
+            'whislist' => $whislist,
+        ]);
     }
 
 

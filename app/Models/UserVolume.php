@@ -32,6 +32,6 @@ class UserVolume extends Model
 
     public function volume()
     {
-        return $this->belongsTo(Volume::class);
+        return $this->belongsTo(Volume::class)->with('edition');
     }
 }

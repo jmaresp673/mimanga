@@ -1,7 +1,7 @@
 @forelse($results as $manga)
     @include('manga._card', ['manga' => $manga])
 @empty
-    <x-no-more-results></x-no-more-results>
+    <x-no-more-results>{{ __('No further results found.') }}</x-no-more-results>
 {{--    <x-text x-data="{ show: false }"--}}
 {{--            x-init="setTimeout(() => show = true, 10)"--}}
 {{--            x-show="show"--}}

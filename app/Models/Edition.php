@@ -9,6 +9,8 @@ class Edition extends Model
 {
     /** @use HasFactory<\Database\Factories\EditionFactory> */
     use HasFactory;
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id', // el id será el anilist_id concatenado al codigo de idioma, ej: 123456ES

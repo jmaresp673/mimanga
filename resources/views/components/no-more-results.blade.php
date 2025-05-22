@@ -15,6 +15,6 @@
                   d="M15 9l-6 6m0-6l6 6"/>
         </svg>
 {{--        <h3 class="mt-4 text-xl font-bold text-indigo-800 dark:text-indigo-200">{{ __('All') }}</h3>--}}
-        <p class="mt-2 text-indigo-600 dark:text-indigo-300">{{ __('No further results found.') }}</p>
+        <p class="mt-2 text-indigo-600 dark:text-indigo-300">{{$slot}}</p>
     </div>
 </div>

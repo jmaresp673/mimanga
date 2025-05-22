@@ -51,7 +51,7 @@ class Volume extends Model
 
     public function edition()
     {
-        return $this->belongsTo(Edition::class);
+        return $this->belongsTo(Edition::class, 'edition_id', 'id');
     }
 
     public function userVolumes()
