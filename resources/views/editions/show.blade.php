@@ -15,9 +15,11 @@
         <x-main-container>
             {{--             Top: imagen / título y autor --}}
             <div class="flex flex-col sm:flex-row items-center gap-6 mb-8">
-                <img src="{!! $volumes[0]->cover_image_url !!}"
-                     alt="{!! $edition->localized_title !!} cover img"
-                     class="w-48 h-auto rounded shadow-lg flex-shrink-0">
+
+                @dd($edition, $volumes)
+{{--                <img src="{!! $volumes[0]->cover_image_url !!}"--}}
+{{--                     alt="{!! $edition->localized_title !!} cover img"--}}
+{{--                     class="w-48 h-auto rounded shadow-lg flex-shrink-0">--}}
 
                 <div class="text-center md:text-left">
                     <div class="flex flex-row items-center gap-2">

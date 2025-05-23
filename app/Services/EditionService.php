@@ -294,26 +294,42 @@ class EditionService
                 // Procesar fecha de edición (día + mes año)
                 $date = null;
 
+                // Decodificar entidades HTML primero (ej: &ordm; a º)
+                $raw = htmlspecialchars_decode($raw);
+
+                // Intentar extraer fecha con día (formato: 29 Julio 2022)
                 // en html: 29 <a ...>Julio 2022</a>
                 if (preg_match('/(\d+)\s*<a[^>]*>\s*([A-Za-z]+)\s+(\d{4})\s*<\/a>/', $raw, $mDate)) {
                     $day = (int)$mDate[1];
                     $month = ucfirst(strtolower(trim($mDate[2])));
                     $year = (int)$mDate[3];
+                } // Si falla, intentar extraer solo mes y año (formato: Julio 2022)
+                elseif (preg_match('/<a[^>]*>\s*([A-Za-z]+)\s+(\d{4})\s*<\/a>/', $raw, $mDate)) {
+                    $day = 1; // Día por defecto
+                    $month = ucfirst(strtolower(trim($mDate[1])));
+                    $year = (int)$mDate[2];
+                } // Si no se detecta fecha, asignar valores por defecto
+                else {
+                    $day = 1;
+                    $month = 'Enero';
+                    $year = 2000; // Año por defecto
+                }
 
-                    $months = [
-                        'Enero' => 1, 'Febrero' => 2, 'Marzo' => 3, 'Abril' => 4,
-                        'Mayo' => 5, 'Junio' => 6, 'Julio' => 7, 'Agosto' => 8,
-                        'Septiembre' => 9, 'Octubre' => 10, 'Noviembre' => 11, 'Diciembre' => 12
-                    ];
+                $months = [
+                    'Enero' => 1, 'Febrero' => 2, 'Marzo' => 3, 'Abril' => 4,
+                    'Mayo' => 5, 'Junio' => 6, 'Julio' => 7, 'Agosto' => 8,
+                    'Septiembre' => 9, 'Octubre' => 10, 'Noviembre' => 11, 'Diciembre' => 12
+                ];
 
-                    if (isset($months[$month])) {
-                        try {
-                            $date = DateTime::createFromFormat('Y-m-d', sprintf('%04d-%02d-%02d', $year, $months[$month], $day))
-                                ->format('Y-m-d');
-                        } catch (\Exception $e) {
-                            $date = null;
-                        }
-                    }
+                // Validar mes y crear fecha
+                try {
+                    $date = isset($months[$month])
+                        ? DateTime::createFromFormat('Y-m-d', sprintf('%04d-%02d-%02d', $year, $months[$month], $day))
+                        : new DateTime('2000-01-01'); // Fecha por defecto si el mes es inválido
+
+                    $date = $date->format('Y-m-d');
+                } catch (\Exception $e) {
+                    $date = '2000-01-01'; // Fecha por defecto ante cualquier error
                 }
 
 
