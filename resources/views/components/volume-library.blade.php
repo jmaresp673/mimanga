@@ -77,15 +77,14 @@
                 <!-- Cabecera -->
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900">
                     <div>
-                        <a href="{{ route('editions.show', ['id' => $volume->edition->id, 'slug' => $volume->edition->localized_title]) }}">
-                        <h3 class="text-xl font-bold text-white hover:text-blue-600 transition-colors duration-300">
-                            {{--                            {{ $volume->edition['localized_title'] }}--}}
-                            <span>{{$volume->edition['localized_title']}}</span>
-                            <span>Nº{{ $volume->volume_number }}</span>
-                        </h3>
-                        <p class="text-sm text-gray-400 mt-1">
-                            {{--                            {{__('Edition')}}: {{$volume->edition->publisher->name}}--}}
-                        </p>
+                        <a href="{{ route('editions.show', ['id' => $volume->edition->id, 'slug' => Str::slug($volume->edition->localized_title, '-')]) }}"
+                        class="w-fit">
+                            <h3 class="w-auto text-xl font-bold text-white hover:text-blue-600 transition-colors duration-300">
+                                {{--                            {{ $volume->edition['localized_title'] }}--}}
+                                <span>{{$volume->edition['localized_title']}}</span>
+                                <span>Nº{{ $volume->volume_number }}</span>
+                            </h3>
+                        </a>
                     </div>
                     <x-hover-text position="left">
                         <x-slot name="trigger">
