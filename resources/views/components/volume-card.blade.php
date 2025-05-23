@@ -102,7 +102,7 @@
                         <!-- Portada -->
                         <div class="col-span-1 flex flex-col gap-2">
                             <img src='{{ $volume->cover_image_url }}'
-                                 class="w-full h-52 object-cover rounded-lg shadow-xl"
+                                 class="w-auto h-auto max-w-full max-h-full rounded-lg shadow-xl"
                                  alt="Portada del volumen">
                             <div class="text-center">
                                 <p class="text-lg font-semibold"> {{ $volume->price }} €</p>

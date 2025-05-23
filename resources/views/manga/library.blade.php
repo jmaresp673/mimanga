@@ -24,13 +24,6 @@
                             </x-text>
                             <div class="flex flex-row flex-wrap gap-4 justify-center">
                                 @foreach($volumes as $volume)
-
-{{--                                    <x-text>--}}
-{{--                                        {{ $volume->volume_number }}--}}
-{{--                                    </x-text>--}}
-{{--                                    <x-text>--}}
-{{--                                        {{ $volume->edition }}--}}
-{{--                                    </x-text>--}}
                                     <x-volume-library
                                         :volume="$volume"
                                     />

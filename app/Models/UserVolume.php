@@ -22,7 +22,7 @@ class UserVolume extends Model
 
     protected $casts = [
         'readed' => 'boolean',
-        'purchase_date' => 'datetime'
+        'purchase_date' => 'date'
     ];
 
     public function user()

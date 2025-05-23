@@ -106,13 +106,13 @@ class UserVolumeController extends Controller
         $volumes = $user->volumes()
             ->with(['edition'])
             ->wherePivotNotNull('purchase_date')
-            ->orderBy('updated_at', 'desc')
+            ->orderByPivot('updated_at', 'desc') // ordenar por updated_at de la tabla pivote user_volumes
             ->get();
 
         $whislist = $user->volumes()
             ->with(['edition'])
             ->wherePivotNull('purchase_date')
-            ->orderBy('updated_at', 'desc')
+            ->orderByPivot('updated_at', 'desc')
             ->get();
 
         return view('manga.library', [

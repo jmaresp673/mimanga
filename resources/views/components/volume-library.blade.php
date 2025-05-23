@@ -1,10 +1,7 @@
 @props([
     'volume' => \App\Models\Volume::class,
 ])
-{{--@php--}}
-{{--    $edition = $volume->edition;--}}
-{{--@endphp--}}
-
+{{--@dd($volume->pivot->purchase_date)--}}
 <div x-data="{
     openModal: false,
     selectedVolume: null,
@@ -45,12 +42,14 @@
                 <span class="text-xs text-gray-300">
                     {{ $volume->total_pages }} {{__('pages')}}
                 </span>
-                <p class="text-xs text-gray-300">
-                    {{ $volume->price }} €
-                </p>
-                <p class="text-xs text-gray-300">
-                    {{ $volume->release_date->format('d/m/Y') }}
-                </p>
+                @if($volume->pivot->purchase_date)
+                    <p class="text-xs text-gray-300">
+                        Purchase date:
+                    </p>
+                    <p class="text-xs text-gray-300">
+                        {{ \Illuminate\Support\Carbon::parse($volume->pivot->purchase_date)->format('d/m/Y') }}
+                    </p>
+                @endif
             </div>
         </div>
     </div>
@@ -78,13 +77,14 @@
                 <!-- Cabecera -->
                 <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900">
                     <div>
-                        <h3 class="text-xl font-bold text-white">
-                            <span>{{ $volume->volume_number }}</span>
-                            -
+                        <a href="{{ route('editions.show', ['id' => $volume->edition->id, 'slug' => $volume->edition->localized_title]) }}">
+                        <h3 class="text-xl font-bold text-white hover:text-blue-600 transition-colors duration-300">
+                            {{--                            {{ $volume->edition['localized_title'] }}--}}
                             <span>{{$volume->edition['localized_title']}}</span>
+                            <span>Nº{{ $volume->volume_number }}</span>
                         </h3>
                         <p class="text-sm text-gray-400 mt-1">
-{{--                            {{__('Edition')}}: {{$volume->edition->publisher->name}}--}}
+                            {{--                            {{__('Edition')}}: {{$volume->edition->publisher->name}}--}}
                         </p>
                     </div>
                     <x-hover-text position="left">
@@ -104,7 +104,7 @@
                         <!-- Portada -->
                         <div class="col-span-1 flex flex-col gap-2">
                             <img src='{{ $volume->cover_image_url }}'
-                                 class="w-full h-52 object-cover rounded-lg shadow-xl"
+                                 class="w-auto h-auto max-w-full max-h-full rounded-lg shadow-xl"
                                  alt="Portada del volumen">
                             <div class="text-center">
                                 <p class="text-lg font-semibold"> {{ $volume->price }} €</p>
@@ -118,11 +118,16 @@
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
                                     <p> {{ $volume->release_date->format('d/m/Y') }}</p>
                                 </div>
-
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
                                     <p> {{ __('total pages: ') }}{{ $volume->total_pages }}</p>
                                 </div>
+                                @if($volume->pivot->purchase_date)
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Purchase Date:')}}</h4>
+                                        <p>{{ \Illuminate\Support\Carbon::parse($volume->pivot->purchase_date)->format('d/m/Y') }}</p>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Botones de accion --}}
