@@ -34,7 +34,7 @@
         {{ $slot }}
     </main>
 </div>
-<div class="md:hidden dock dock-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
+<div class="md:hidden z-[999] dock dock-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
     <x-nav-link class="text-center"
                 :href="route('manga.search')"
                 :active="request()->routeIs('manga.search')"

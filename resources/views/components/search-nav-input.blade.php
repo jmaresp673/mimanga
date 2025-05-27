@@ -50,4 +50,5 @@
             </div>
         </div>
     </div>
+    <button type="submit" class="hidden"></button>
 </div>
