@@ -69,7 +69,7 @@
                  x-transition:leave="ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                  x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-0 sm:scale-95"
-                 class="pb-16 sm:pb-0 text-gray-900 dark:text-white bg-gray-800 rounded-t-xl sm:rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all"
+                 class="pb-16 sm:pb-0 text-gray-900 bg-white dark:text-white dark:bg-gray-800 rounded-t-xl sm:rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all"
                  @click.stop
                  x-cloak>
 
