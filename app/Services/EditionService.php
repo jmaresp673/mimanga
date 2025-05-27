@@ -362,4 +362,87 @@ class EditionService
             'general' => $general,  // Todos los metadatos extraídos de la tabla principal
         ];
     }
+
+    protected function fetchEnglish(string $english, string $type): array
+    {
+        {
+
+        }
+
+    }
+
+
+    /**
+     * Obtiene el ISBN de un volumen validando autor y número.
+     *
+     * @param string $seriesTitle Título limpio de la serie (p.ej. "Chainsaw Man")
+     * @param string $expectedAuthors Lista CSV de autores esperados (p.ej. "Tatsuki Fujimoto")
+     * @param int $volumeNumber Número de volumen que buscamos
+     * @param string $lang Código de idioma para Google Books (en/fr)
+     * @return string|null           ISBN_13 o ISBN_10 si se encuentra, null sino
+     */
+    public function fetchIsbnForVolume(string $seriesTitle, string $expectedAuthors, string $lang = 'en'): ?string
+    {
+        try {
+            $authorsToMatch = array_map('trim', explode(',', $expectedAuthors));
+
+            $resp = Http::get('https://www.googleapis.com/books/v1/volumes', [
+                'q' => $seriesTitle,
+                'langRestrict' => $lang,
+                'maxResults' => 40,
+            ]);
+
+            if (!$resp->ok()) {
+                return null;
+            }
+
+            foreach ($resp->json('items', []) as $item) {
+                $info = $item['volumeInfo'] ?? [];
+
+                // 1) Validar autor:
+                $itemAuthors = $info['authors'] ?? [];
+                if (!count(array_intersect($authorsToMatch, $itemAuthors))) {
+                    return null; // No coincide con los autores esperados
+                }
+
+                // 2) Extraer titulo del title y numero de seriesInfo[bookDisplayNumber]
+                $title = $info['title'] ?? '';
+                // seriesInfo puede no existir, así que lo manejamos con un try-catch
+                try {
+                    $volumeNumber = $info['seriesInfo']['bookDisplayNumber'];
+
+                    // también intentamos extraer el seriesId de seriesInfo
+                    //seriesInfo[volumeSeries][0]['seriesId'] ?? null
+                    $seriesInfo = $info['seriesInfo']['volumeSeries'][0]['seriesId'] ?? null;
+                } catch (\Exception $e) {
+                    $volumeNumber = 1; // Asignar 1 si no se encuentra
+                    $seriesInfo = null; // Asignar null si no se encuentra
+                }
+
+                // 3) Validar número de volumen
+                if (!preg_match('/' . preg_quote($seriesTitle, '/') . '/i', $title)) {
+                    return null; // No coincide con el título de la serie, no es un volumen de la serie
+                }
+
+                // 3) Extraer el ISBN
+                // Primero busca ISBN_13, si no lo encuentra busca ISBN_10
+                foreach ($info['industryIdentifiers'] ?? [] as $id) {
+                    if ($id['type'] === 'ISBN_13') {
+                        return $id['identifier'];
+                    }
+                }
+                foreach ($info['industryIdentifiers'] ?? [] as $id) {
+                    if ($id['type'] === 'ISBN_10') {
+                        return $id['identifier'];
+                    }
+                }
+                // Si no se encuentra ningún ISBN, devolver null
+            }
+
+        }catch( \Exception $e) {
+            Log::error('Error fetching ISBN: ' . $e->getMessage());
+        }
+        return null;
+    }
+
 }

@@ -7,10 +7,11 @@
         }
     }"
      x-init="document.documentElement.classList.toggle('dark', dark)"
-     {{ $attributes->merge(['class' => 'absolute top-0 right-0 flex items-center']) }}>
+    {{ $attributes->merge(['class' => 'flex items-center']) }}>
     <button @click="toggle"
-            class="flex items-center gap-2 px-3 py-2 rounded-bl text-sm font-medium text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-800 transition duration-150 ease-in-out"
     >
         <i :class="dark ? 'fas fa-sun ' : 'fas fa-moon'"></i>
+        <span class="ms-2" x-text="dark ? 'Switch to light Mode' : 'Switch to dark Mode'"></span>
     </button>
 </div>

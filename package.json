@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "concurrently \"nodemon --exec vite\" \"php artisan serve\""
+        "dev": "concurrently \"nodemon --exec vite\" \"php artisan serve\"",
+        "watch": "vite"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
@@ -11,6 +12,7 @@
         "autoprefixer": "^10.4.2",
         "axios": "^1.7.4",
         "concurrently": "^9.0.1",
+        "daisyui": "^5.0.38",
         "laravel-vite-plugin": "^1.2.0",
         "nodemon": "^3.1.10",
         "postcss": "^8.4.31",

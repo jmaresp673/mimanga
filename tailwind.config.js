@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import daisyui from "daisyui";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -14,8 +15,14 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            backdropBlur: {
+                sm: '4px',
+            }
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        daisyui
+    ],
 };
