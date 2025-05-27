@@ -69,12 +69,12 @@
                  x-transition:leave="ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                  x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-0 sm:scale-95"
-                 class="bg-gray-800 rounded-t-xl sm:rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all"
+                 class="pb-16 sm:pb-0 text-gray-900 dark:text-white bg-gray-800 rounded-t-xl sm:rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all"
                  @click.stop
                  x-cloak>
 
                 <!-- Cabecera -->
-                <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900">
+                <div class="p-4 border-b  flex justify-between items-center border-gray-500 bg-gray-600 dark:border-gray-700 dark:bg-gray-900">
                     <div>
                         <h3 class="text-xl font-bold text-white">
                             <span>{{ $volume->volume_number }}</span>
@@ -97,12 +97,12 @@
                 </div>
 
                 <!-- Contenido -->
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-white">
+                <div class="p-6 bg-white dark:bg-gray-800">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                         <!-- Portada -->
-                        <div class="col-span-1 flex flex-col gap-2">
+                        <div class="col-span-2 sm:col-span-1 flex flex-col justify-center items-center gap-2 w-full">
                             <img src='{{ $volume->cover_image_url }}'
-                                 class="w-auto h-auto max-w-full max-h-full rounded-lg shadow-xl"
+                                 class="w-40 h-auto rounded-lg shadow-xl mx-auto"
                                  alt="Portada del volumen">
                             <div class="text-center">
                                 <p class="text-lg font-semibold"> {{ $volume->price }} €</p>
@@ -110,7 +110,7 @@
                         </div>
 
                         <!-- Detalles -->
-                        <div class="col-span-2 space-y-4">
+                        <div class="col-span-2 space-y-4 text-center sm:text-left">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
@@ -126,7 +126,7 @@
                             {{-- Botones de accion --}}
                             <div x-data="volumeActions({{ auth()->id() }}, {{ $volume->id }})"
                                  x-init="checkStatus"
-                                 class="flex gap-2">
+                                 class="flex gap-2 justify-center items-center sm:justify-start sm:items-start ">
 
                                 <template x-if="status === null">
                                     <div class="flex gap-2">
