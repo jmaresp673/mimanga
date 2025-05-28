@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Manga Search Routes
     Route::get('/', [MangaSearchController::class, 'index'])->name('manga.search');
+//    Route::get('/', [MangaSearchController::class, 'popular'])->name('manga.popular');
     Route::get('/search', [MangaSearchController::class, 'search'])->name('manga.search.dynamic');
     Route::post('/', [MangaSearchController::class, 'search'])->name('manga.search.perform');
 
@@ -38,9 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Series Routes
     Route::controller(SeriesController::class)->group(function () {
-        Route::get('/series/{anilistId}', [SeriesController::class, 'show'])->name('series.show');
-        Route::post('/series/{anilistId}/add', [SeriesController::class, 'add'])->name('series.add');
-        Route::post('/series/{anilistId}/remove', [SeriesController::class, 'remove'])->name('series.remove');
+        Route::get('/series/{anilistId}/{slug}', [SeriesController::class, 'show'])->name('series.show');
+//        Route::post('/series/{anilistId}/add', [SeriesController::class, 'add'])->name('series.add');
+//        Route::post('/series/{anilistId}/remove', [SeriesController::class, 'remove'])->name('series.remove');
     });
 
     //Edition Routes

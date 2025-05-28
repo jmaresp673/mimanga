@@ -10,7 +10,10 @@ class MangaSearchController extends Controller
 {
     public function index()
     {
-        return view('manga.search');
+        $popular = $this->popular(request());
+        return view('manga.search', [
+            'popular' => $popular,
+        ]);
     }
 
     public function search(Request $request)
@@ -147,131 +150,88 @@ class MangaSearchController extends Controller
         return view('manga.results', compact('results', 'query', 'pageInfo'));
     }
 
-    public function recomendations(Request $request)
+    /**
+     * Mostrar recomendaciones de manga populares.
+     */
+    protected function popular(Request $request)
     {
-        $request->validate([
-            'query' => 'required|string|max:255',
-            'page' => 'nullable|integer|min:1',
-        ]);
+        $perPage = 20;
+        $page = 1;
 
-        $query = $request->input('query');
-        $page = (int)$request->input('page', 1);
+        $cacheKey = "popular_manga_popular_page_{$page}_per_{$perPage}";
 
-        $cacheKey = 'search_manga_' . md5($query . '_page_' . $page);
-
-        $data = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($query, $page) {
-            $graphqlQuery = <<<GQL
-        query (\$search: String, \$page: Int) {
-            Page(perPage: 9, page: \$page) {
-                pageInfo {
-                    total
-                    perPage
-                    currentPage
-                    lastPage
-                    hasNextPage
+        $data = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($perPage, $page) {
+            $graphql = <<<'GQL'
+            query ($perPage: Int, $page: Int) {
+              Page(perPage: $perPage, page: $page) {
+                media(type: MANGA, sort: POPULARITY_DESC) {
+                  id
+                  title { romaji native english }
+                  coverImage { large }
+                  bannerImage
+                  averageScore
+                  isAdult
+                  format
+                  status
+                  chapters
+                  volumes
+                  startDate { year }
+                  endDate { year }
+                  genres
+                  staff {
+                    nodes { id name { full } }
+                    edges { role }
+                  }
                 }
-                media(search: \$search, type: MANGA, sort: [POPULARITY_DESC]) {
-                    id
-                    title {
-                        romaji
-                        native
-                    }
-                    coverImage {
-                        large
-                    }
-                    bannerImage
-                    startDate {
-                        year
-                    }
-                    endDate {
-                        year
-                    }
-                    staff {
-                        nodes {
-                            id
-                            name {
-                                full
-                            }
-                            primaryOccupations
-                        }
-                        edges {
-                            role
-                        }
-                    }
-                    isAdult
-                }
+              }
             }
-        }
-        GQL;
+            GQL;
 
-            $variables = [
-                'search' => $query,
-                'page' => $page,
-            ];
-
-            $response = Http::withHeaders([
+            $resp = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post('https://graphql.anilist.co', [
-                'query' => $graphqlQuery,
-                'variables' => $variables,
+                'query' => $graphql,
+                'variables' => [
+                    'perPage' => $perPage,
+                    'page' => $page,
+                ],
             ]);
 
-            if ($response->failed() || isset($response->json()['errors'])) {
-                abort(500, 'Error al consultar Anilist.');
+            if ($resp->failed() || isset($resp->json()['errors'])) {
+                return [];
             }
 
-            return $response->json('data.Page');
+            return $resp->json('data.Page.media') ?? [];
         });
 
-        $results = $data['media'] ?? [];
-        $pageInfo = $data['pageInfo'] ?? [];
+        // Filtramos +18
+        $results = array_filter($data, fn($m) => empty($m['isAdult']));
 
-        // Filtrar mangas +18
-        $results = array_filter($results, function ($manga) {
-            return empty($manga['isAdult']) || $manga['isAdult'] === false;
-        });
-
-        // Agregar autores principales
-        $results = array_map(function ($manga) {
-            $mainAuthors = [];
-
-            if (!empty($manga['staff']['nodes']) && !empty($manga['staff']['edges'])) {
-                $validRoles = [
-                    'story & art',
-                    'story',
-                    'art',
-                    'illustration',
-                    'original creator'
-                ];
-
-                foreach ($manga['staff']['nodes'] as $index => $staff) {
-                    $role = strtolower($manga['staff']['edges'][$index]['role'] ?? '');
-                    $name = $staff['name']['full'] ?? 'Autor desconocido';
-                    $id = $staff['id'] ?? null;
-
-                    foreach ($validRoles as $validRole) {
-                        if (str_contains($role, $validRole)) {
-                            $mainAuthors[] = [
-                                'id' => $id,
-                                'type' => $validRole,
-                                'name' => $name
+        // Añadimos autores principales
+        $results = array_map(function ($m) {
+            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
+            $main = [];
+            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
+                foreach ($m['staff']['nodes'] as $i => $staff) {
+                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
+                    foreach ($validRoles as $vr) {
+                        if (str_contains($role, $vr)) {
+                            $main[] = [
+                                'id' => $staff['id'],
+                                'type' => $vr,
+                                'name' => $staff['name']['full'] ?? 'Desconocido',
                             ];
-
-                            if ($validRole === 'story & art') {
-                                break 2;
-                            }
+                            if ($vr === 'story & art') break 2;
                         }
                     }
                 }
             }
-
-            return array_merge($manga, ['main_authors' => $mainAuthors]);
+            $m['main_authors'] = $main;
+            return $m;
         }, $results);
 
-
-        if ($request->ajax()) {
-            return view('manga._cards', ['results' => $results])->render();
-        }
-        return view('manga.results', compact('results', 'query', 'pageInfo'));
+        return [
+            'popular' => $results,
+        ];
     }
 }

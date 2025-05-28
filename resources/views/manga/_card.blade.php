@@ -15,10 +15,10 @@
     x-transition:enter="transition ease-out duration-1000 transform"
     x-transition:enter-start="opacity-0 translate-y-4"
     x-transition:enter-end="opacity-100 translate-y-0"
-    class="border rounded dark:bg-gray-800 p-4 shadow-md w-[11rem] sm:w-56 md:w-60 xl:w-[17rem] mx-auto"
->
+    class="border rounded dark:bg-gray-800 p-4 shadow-md w-[11rem] sm:w-56 md:w-60 xl:w-[17rem] mx-auto hover:scale-105 transition-all duration-300 hover:shadow-[0_2px_12px_0_rgba(99,102,241,0.35)]"
+    >
     <!-- Enlace al show de la serie -->
-    <a href="{{ route('series.show', $manga['id']) }}" class="!text-blue-500 !hover:underline">
+    <a href="{{ route('series.show', ['anilistId' => $manga['id'], 'slug' => \Illuminate\Support\Str::slug($manga['title']['romaji'])]) }}" class="!text-blue-500 !hover:underline">
         <!-- Placeholder mientras la imagen carga -->
         <div x-show="!loaded" x-cloak class="w-full h-80 bg-gray-300 animate-pulse rounded"></div>
 

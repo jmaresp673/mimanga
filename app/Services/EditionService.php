@@ -50,6 +50,12 @@ class EditionService
     {
         // 1) Eliminar "Anime Comic(s)"
         $filtered = array_filter($collections, fn($c) => !preg_match('/Anime\s+Comics?/i', $c['title']));
+        // Tambien eliminar "Comic-Books"
+        $filtered = array_filter($filtered, fn($c) => !preg_match('/Comic-Books?/i', $c['title']));
+        // Eliminar Edición Especial
+        $filtered = array_filter($filtered, fn($c) => !preg_match('/(Edición\s+Especial)/i', $c['title']));
+        // Eliminar "Guardians de la nit" como excepción
+        $filtered = array_filter($filtered, fn($c) => !preg_match('/Guardians\s+de\s+la\s+nit/i', $c['title']));
 
         // 2) Descarta Català
 //        $hasCast = collect($filtered)->contains(fn($c) => str_contains($c['title'], '(Castellano)'));
@@ -118,6 +124,12 @@ class EditionService
         //
         try {
             $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
+
+            // fallback, si no se encuentra el título en nativo, buscar por romaji
+            if ($resp->json(0 === null)){
+                $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $romaji]);
+                dd($resp->json(0));
+            }
             if ($resp->failed()) {
                 abort(502, 'No se pudo conectar al buscador de ListadoManga.');
             }
@@ -365,10 +377,12 @@ class EditionService
 
     protected function fetchEnglish(string $english, string $type): array
     {
-        {
 
-        }
+        // Placeholder para lógica de scraping en inglés
+        // Aquí deberías implementar la lógica específica para buscar ediciones en inglés
+        // similar a lo que se hace en fetchSpanish, pero adaptada a las fuentes en inglés.
 
+        throw new InvalidArgumentException("Lógica para 'EN' aún no implementada.");
     }
 
 

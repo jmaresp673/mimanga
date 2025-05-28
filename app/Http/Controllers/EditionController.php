@@ -85,7 +85,10 @@ class EditionController extends Controller
                     $edition->sinopsis = $data['general']['sinopsis'] ?? "No hay sinopsis disponible.";
                     $edition->publisher_id = $existingPublisher->id;
                     $edition->language = $lang;
-                    $edition->edition_total_volumes = $data['general']['numbers_localized'];
+//                    $edition->edition_total_volumes = $data['general']['numbers_localized'] ?? 1;
+                    $edition->edition_total_volumes = is_numeric($data['general']['numbers_localized'] ?? null)
+                        ? (int)$data['general']['numbers_localized']
+                        : (isset($data['editions']) ? count($data['editions']) : null);
                     $edition->format = $data['general']['format'] ?? 'MANGA';
                     $edition->type = $data['general']['type'] ?? 'MANGA';
                     $edition->country_code = $lang;
@@ -101,7 +104,10 @@ class EditionController extends Controller
                         'sinopsis' => $data['general']['sinopsis'] ?? "No hay sinopsis disponible.",
                         'publisher_id' => $existingPublisher->id,
                         'language' => $lang,
-                        'edition_total_volumes' => $data['general']['numbers_localized'],
+//                        'edition_total_volumes' => $data['general']['numbers_localized'] ?? 1,
+                        'edition_total_volumes' => is_numeric($data['general']['numbers_localized'] ?? null)
+                            ? (int)$data['general']['numbers_localized']
+                            : (isset($data['editions']) ? count($data['editions']) : null),
                         'format' => $data['general']['format'] ?? 'MANGA',
                         'type' => $data['general']['type'] ?? 'MANGA',
                         'country_code' => $lang,

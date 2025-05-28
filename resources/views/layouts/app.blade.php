@@ -38,14 +38,14 @@
     <x-nav-link class="text-center"
                 :href="route('manga.search')"
                 :active="request()->routeIs('manga.search')"
-                :class="request()->routeIs('manga.search') ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50 dark:bg-indigo-900/50' : ''"> {{-- ? 'dock-active' : ''"--}}
+                :class="request()->routeIs('manga.search') ? 'border-indigo-500 dark:border-indigo-600 bg-indigo-100 dark:bg-indigo-900/50' : ''"> {{-- ? 'dock-active' : ''"--}}
         <i class="fa-solid fa-home size-[1.2em]"></i>
         <span class="dock-label">{{__('Home')}}</span>
     </x-nav-link>
     <x-nav-link class="text-center"
                 :href="route('user.index')"
                 :active="request()->routeIs('user.index')"
-                :class="request()->routeIs('user.index') ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50 dark:bg-indigo-900/50' : ''"> {{-- ? 'dock-active' : ''"--}}
+                :class="request()->routeIs('user.index') ? 'border-indigo-500 dark:border-indigo-600 bg-indigo-100 dark:bg-indigo-900/50' : ''"> {{-- ? 'dock-active' : ''"--}}
         <i class="fa-solid fa-book size-[1.2em]"></i>
         <span class="dock-label">{{__('Library')}}</span>
     </x-nav-link>
