@@ -7,17 +7,8 @@
 
     <div class="py-6">
         <x-main-container>
-{{--            <form method="POST" action="{{ route('manga.search.perform') }}"--}}
-{{--                  class="flex flex-col items-center gap-4 mb-10">--}}
-{{--                @csrf--}}
-{{--                <x-search-input name="query" placeholder="{{ __('What are we reading today?') }}"--}}
-{{--                              value="{{ old('query') }}" required>--}}
-{{--                    <x-search-button>--}}
-{{--                        {{ __('Search') }}--}}
-{{--                    </x-search-button>--}}
-{{--                </x-search-input>--}}
-{{--            </form>--}}
-            <div id="manga-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div id="manga-results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 gap-y-6">
                 @include('manga._cards', ['results' => $results])
             </div>
 
