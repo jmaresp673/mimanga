@@ -1,14 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Results of the search for ') }}<strong>{{ $query }}</strong>
+        <h2 class="font-semibold text-xl sm:text-2xl md:text-4xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Results of the search for ') }}<br>
+            <strong class="text-2xl sm:text-4xl">{{ $query }}</strong>
         </h2>
     </x-slot>
 
     <div class="py-6">
         <x-main-container>
 
-            <div id="manga-results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 gap-y-6">
+            <div id="manga-results" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-6 gap-x-0 sm:gap-x-2">
                 @include('manga._cards', ['results' => $results])
             </div>
 

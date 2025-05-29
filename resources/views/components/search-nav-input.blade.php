@@ -14,8 +14,9 @@
                 <input
                     @click="searchOpen = true; $nextTick(() => $refs.searchInput.focus())"
                     type="search"
+                    value="{{ request('query') }}"
                     placeholder="{{ __('Search') }}"
-                    class="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-transparent focus:border-gray-400 focus:ring-0 transition-all duration-300 cursor-pointer"
+                    class="text-gray-500 dark:text-white w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-transparent focus:border-gray-400 focus:ring-0 transition-all duration-300 cursor-pointer"
                 >
             </div>
 
@@ -33,8 +34,9 @@
                     <input
                         x-ref="searchInput"
                         name="query"
+                        value="{{ request('query') }}"
                         placeholder="{{ __('What are we reading today?') }}"
-                        class="text-black w-full px-4 py-4 text-lg rounded-lg bg-white/95 dark:bg-gray-800/95 dark:text-white backdrop-blur-sm border-transparent focus:ring-2 focus:ring-indigo-400 shadow-lg"
+                        class="text-black w-full px-4 py-4 text-lg rounded-lg bg-white/95 dark:bg-gray-800/95 dark:text-white backdrop-blur-sm border-transparent focus:ring-2 focus:ring-indigo-400 shadow-lg transition-all duration-200"
                         style="min-width: 300px"
                         x-init="$nextTick(() => $el.focus())"
                         @keydown.escape="searchOpen = false"

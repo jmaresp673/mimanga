@@ -126,6 +126,11 @@ class EditionService
                 // fallback, si no se encuentra el título en nativo, buscar por inglés
                 if ($resp->json()['colecciones'] === [] && !empty($english)) {
                     $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $english]);
+                    // fallback alternativo, si no se encuentra el título en inglés, buscar por nativo despues de eliminar espacios en blanco
+                    if ($resp->json()['colecciones'] === []) {
+                        $nativeALT = preg_replace('/\s+/', '', $native);
+                        $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $nativeALT]);
+                    }
                 }
             }
 //                    dd($resp->json(), $native, $english, $romaji);
