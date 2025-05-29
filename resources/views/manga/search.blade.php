@@ -7,7 +7,7 @@
     <div class="py-6">
         <x-main-container>
             <form method="POST" action="{{ route('manga.search.perform') }}"
-                  class="flex flex-col items-center gap-4 mb-16 sm:mb-8">
+                  class="flex flex-col items-center gap-4 mb-16 sm:mb-8 hover:scale-105 transition-all duration-200">
                 @csrf
                 <x-search-input name="query" placeholder="{{ __('What are we reading today? ') }}" required>
                     <x-search-button>
