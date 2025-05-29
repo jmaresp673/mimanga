@@ -11,8 +11,12 @@ class MangaSearchController extends Controller
     public function index()
     {
         $popular = $this->popular(request());
+        $score = $this->score(request());
+        $trending = $this->trending(request());
         return view('manga.search', [
             'popular' => $popular,
+            'score' => $score,
+            'trending' => $trending,
         ]);
     }
 
@@ -232,6 +236,176 @@ class MangaSearchController extends Controller
 
         return [
             'popular' => $results,
+        ];
+    }
+
+    /**
+     * Mostrar recomendaciones de manga mas valorados.
+     */
+    protected function score(Request $request)
+    {
+        $perPage = 20;
+        $page = 1;
+
+        $cacheKey = "score_manga_page_{$page}_per_{$perPage}";
+
+        $data = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($perPage, $page) {
+            $graphql = <<<'GQL'
+            query ($perPage: Int, $page: Int) {
+              Page(perPage: $perPage, page: $page) {
+                media(type: MANGA, sort: SCORE_DESC) {
+                  id
+                  title { romaji native english }
+                  coverImage { large }
+                  bannerImage
+                  averageScore
+                  isAdult
+                  format
+                  status
+                  chapters
+                  volumes
+                  startDate { year }
+                  endDate { year }
+                  genres
+                  staff {
+                    nodes { id name { full } }
+                    edges { role }
+                  }
+                }
+              }
+            }
+            GQL;
+
+            $resp = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('https://graphql.anilist.co', [
+                'query' => $graphql,
+                'variables' => [
+                    'perPage' => $perPage,
+                    'page' => $page,
+                ],
+            ]);
+
+            if ($resp->failed() || isset($resp->json()['errors'])) {
+                return [];
+            }
+
+            return $resp->json('data.Page.media') ?? [];
+        });
+
+        // Filtramos +18
+        $results = array_filter($data, fn($m) => empty($m['isAdult']));
+
+        // Añadimos autores principales
+        $results = array_map(function ($m) {
+            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
+            $main = [];
+            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
+                foreach ($m['staff']['nodes'] as $i => $staff) {
+                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
+                    foreach ($validRoles as $vr) {
+                        if (str_contains($role, $vr)) {
+                            $main[] = [
+                                'id' => $staff['id'],
+                                'type' => $vr,
+                                'name' => $staff['name']['full'] ?? 'Desconocido',
+                            ];
+                            if ($vr === 'story & art') break 2;
+                        }
+                    }
+                }
+            }
+            $m['main_authors'] = $main;
+            return $m;
+        }, $results);
+
+        return [
+            'score' => $results,
+        ];
+    }
+
+    /**
+     * Mostrar mangas en tendencia.
+     */
+    protected function trending(Request $request)
+    {
+        $perPage = 20;
+        $page = 1;
+
+        $cacheKey = "trending_manga_page_{$page}_per_{$perPage}";
+
+        $data = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($perPage, $page) {
+            $graphql = <<<'GQL'
+            query ($perPage: Int, $page: Int) {
+              Page(perPage: $perPage, page: $page) {
+                media(type: MANGA, sort: TRENDING_DESC) {
+                  id
+                  title { romaji native english }
+                  coverImage { large }
+                  bannerImage
+                  averageScore
+                  isAdult
+                  format
+                  status
+                  chapters
+                  volumes
+                  startDate { year }
+                  endDate { year }
+                  genres
+                  staff {
+                    nodes { id name { full } }
+                    edges { role }
+                  }
+                }
+              }
+            }
+            GQL;
+
+            $resp = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('https://graphql.anilist.co', [
+                'query' => $graphql,
+                'variables' => [
+                    'perPage' => $perPage,
+                    'page' => $page,
+                ],
+            ]);
+
+            if ($resp->failed() || isset($resp->json()['errors'])) {
+                return [];
+            }
+
+            return $resp->json('data.Page.media') ?? [];
+        });
+
+        // Filtramos +18
+        $results = array_filter($data, fn($m) => empty($m['isAdult']));
+
+        // Añadimos autores principales
+        $results = array_map(function ($m) {
+            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
+            $main = [];
+            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
+                foreach ($m['staff']['nodes'] as $i => $staff) {
+                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
+                    foreach ($validRoles as $vr) {
+                        if (str_contains($role, $vr)) {
+                            $main[] = [
+                                'id' => $staff['id'],
+                                'type' => $vr,
+                                'name' => $staff['name']['full'] ?? 'Desconocido',
+                            ];
+                            if ($vr === 'story & art') break 2;
+                        }
+                    }
+                }
+            }
+            $m['main_authors'] = $main;
+            return $m;
+        }, $results);
+
+        return [
+            'trending' => $results,
         ];
     }
 }

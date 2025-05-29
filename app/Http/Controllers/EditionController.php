@@ -28,6 +28,7 @@ class EditionController extends Controller
                 $media['title']['native'],
                 $lang,
                 $media['title']['romaji'],
+                $media['title']['english'] ?? "",
                 $media['format'] ?? 'MANGA'
             ); // pasamos el romaji para buscar la edicion y el idioma
         } catch (ErrorException $e) {

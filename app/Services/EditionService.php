@@ -23,7 +23,7 @@ class EditionService
      * @return array  ['title' => string, 'editions' => array, 'general' => array]
      * @throws InvalidArgumentException
      */
-    public function fetchByRomajiAndLang(string $native, string $lang, string $romaji, string $type): array
+    public function fetchByRomajiAndLang(string $native, string $lang, string $romaji, string $english, string $type): array
     {
         $lang = strtoupper($lang);
         if (!in_array($lang, $this->supported, true)) {
@@ -31,7 +31,7 @@ class EditionService
         }
 
         if ($lang === 'ES') {
-            return $this->fetchSpanish($native, $romaji, $type);
+            return $this->fetchSpanish($native, $romaji, $english, $type);
         }
 
         // placeholder para EN
@@ -104,32 +104,31 @@ class EditionService
     /**
      * Lógica de scraping de ediciones en español.
      */
-    protected function fetchSpanish(string $native, string $romaji, string $type): array
+    protected function fetchSpanish(string $native, string $romaji, string $english, string $type): array
     {
-//         Limpiar romaji: eliminar signos y paréntesis
+        // Limpiar romaji: eliminar signos y paréntesis
         $cleanRomaji = preg_replace('/[^A-Za-z0-9\s]/', '', $romaji);
         $cleanRomaji = preg_replace('/\s+/', ' ', $cleanRomaji);
         $romaji = trim($cleanRomaji);
-//        dd($romaji);
 
         // Limpiar kanji o nativo y elimina "。"
-//        $cleanNative = preg_replace('/[-]/', '', $native);
         $native = preg_replace('/\s+/', ' ', $native);
         $native = preg_replace('/。/', '', $native);
-//        dd($native);
-
 
         //
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
         try {
-            $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
-
-            // fallback, si no se encuentra el título en nativo, buscar por romaji
-            if ($resp->json(0 === null)){
-                $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $romaji]);
-                dd($resp->json(0));
+            $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $romaji]);
+            // fallback, si no se encuentra el título en romaji, buscar por nativo
+            if ($resp->json()['colecciones'] === []) {
+                $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $native]);
+                // fallback, si no se encuentra el título en nativo, buscar por inglés
+                if ($resp->json()['colecciones'] === [] && !empty($english)) {
+                    $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $english]);
+                }
             }
+//                    dd($resp->json(), $native, $english, $romaji);
             if ($resp->failed()) {
                 abort(502, 'No se pudo conectar al buscador de ListadoManga.');
             }
@@ -147,28 +146,17 @@ class EditionService
             'title' => trim($item['nombre']),
             'url' => 'https://www.listadomanga.es/coleccion.php?id=' . $item['id'],
         ], $json['colecciones']);
-//        dd($colecciones);
 
         // Seleccionar la mejor opcion
         $best = $this->selectCollection($colecciones, strtoupper($type));
-//        dd($best);
         $colecciones = $best ? $best : []; // si no hay coincidencias, devolver un array vacío
 
         if (empty($colecciones)) {
             return $colecciones;
-//            abort(404, 'No se encontró la serie en ListadoManga.es');
         }
 
-        $collectionId = $colecciones['id'];
         $spanishTitle = $colecciones['title'];
         $detailUrl = $colecciones['url'];
-
-        // Nos quedamos con la primera colección
-//        $first = $colecciones[0];
-//        $collectionId = $first['id'];
-//        $spanishTitle = $first['nombre'];
-//        dd($spanishTitle, $collectionId);
-
 
         $jar = CookieJar::fromArray([
             'mostrarNSFW' => 'true',
@@ -184,8 +172,6 @@ class EditionService
                     'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
                 ],
             ])->get($detailUrl)->body();
-//        $html = Http::get($detailUrl)->body();
-//        dd($html);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             // lanzar error de servidor
@@ -196,7 +182,6 @@ class EditionService
 
         try {
             // Bloque de datos generales (primera tabla ventana* con <h2> título)
-//            dd($crawler);
             $infoHtml = $crawler
                 ->filter('table[class^="ventana"]')
                 ->eq(0)
@@ -233,7 +218,6 @@ class EditionService
             'numbers_jp' => $mJNums[1] ?? '',
             'numbers_localized' => $mSNums[1] ?? '',
         ];
-//                @dd($general);
 
         ///////// SINÓPSIS //////////
         $sinopsis = 'No hay sinopsis disponible.'; // Valor por defecto
@@ -253,24 +237,17 @@ class EditionService
                 $sinopsisText = $sinopsisTable->first()->filter('td.izq')->html();
 
                 // Eliminar hr y espacios innecesarios
-//                $sinopsis = str_replace(['<hr>', '<hr/>', '<hr />'], '', $sinopsisText);
                 $sinopsis = strip_tags($sinopsisText); // Eliminar cualquier etiqueta restante
-//                $sinopsis = trim(preg_replace('/\s+/', ' ', $sinopsis)); // Espacios múltiples a uno
                 $sinopsis = str_replace('  ', ' ', $sinopsis); // Dobles espacios por uno
-//                $sinopsis = html_entity_decode($sinopsis); // Convertir entidades HTML a caracteres (ej. &nbsp; a espacio)
             }
         } catch (\Exception $e) {
             Log::error('Error extrayendo sinopsis: ' . $e->getMessage());
         }
-
         $general['sinopsis'] = $sinopsis;
-//        dd($general, $sinopsisText);
 
 //////////  DATOS VOLUMENES ///////////
 
         $nodes = $crawler->filter('table[style*="width: 184px"][class^="ventana"]');
-//        dd($nodes->count());
-
         try {
             // Convertir los nodos a elementos DOM independientes
             $domElements = $nodes->getIterator()->getArrayCopy();
@@ -290,8 +267,6 @@ class EditionService
                 // Procesar texto crudo
                 $raw = $cell->html();
                 $cleanText = strip_tags(preg_replace('/<a[^>]*>.*?<\/a>/', ' ', $raw), '<br>');
-//                $cleanText = trim(preg_replace('/\s+/', ' ', $cleanText));
-//                dd($cleanText);
 
                 // Extraer datos
                 if ($general['numbers_localized'] === '1') {
@@ -301,7 +276,6 @@ class EditionService
                 }
                 preg_match('/(\d+)\s*p(?:á|a)ginas/i', $cleanText, $mPages);
                 preg_match('/(\d+,\d{2})\s*€/i', $cleanText, $mPrice);
-//                @dd($img, $mVol, $mPages, $mPrice[1]);
 
                 // Procesar fecha de edición (día + mes año)
                 $date = null;
@@ -355,19 +329,15 @@ class EditionService
                 ];
             }, $domElements);
 
-//            dd($editions);
             // Filtrar y formatear resultados
             $editions = array_values(array_filter($editions, function ($item) {
                 return $item !== null && $item['volumen'] !== null && $item['portada'] !== null;
             }));
-
-//            @dd($editions);
-
         } catch (InvalidArgumentException $e) {
             @dd('Error en el procesamiento: ' . $e->getMessage());
         }
+
         // 4) Devolver el array con los datos de edicion, titulo, y volumenes
-//        dd($general);
         return [
             'title' => $spanishTitle, // titulo en español ( también está en general )
             'editions' => $editions, //  Listado de ediciones (volumen, páginas, precio, fecha, portada)
@@ -453,7 +423,7 @@ class EditionService
                 // Si no se encuentra ningún ISBN, devolver null
             }
 
-        }catch( \Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error fetching ISBN: ' . $e->getMessage());
         }
         return null;

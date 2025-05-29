@@ -49,12 +49,12 @@
             </p>
         </div>
         <div class="text-center mb-2">
-            <x-text class="!p-0 text-xl font-bold">{{ $manga['title']['romaji'] }}</x-text>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
+            <x-text class="line-clamp-2 sm:line-clamp-3 md:line-clamp-none !p-0 text-sm sm:text-xl font-bold">{{ $manga['title']['romaji'] }}</x-text>
+            <p class="line-clamp-2 text-xs text-gray-600 dark:text-gray-400">
                 {{ $manga['title']['native'] }}
             </p>
         </div>
-        <div class="w-full h-[1px] bg-gray-400 dark:bg-white"></div>
+        <div class="w-full mb-1 sm:mb-2 h-[1px] bg-gray-400 dark:bg-white"></div>
         <div class="flex flex-row flex-wrap justify-between items-center mb-2 px-3 text-nowrap">
             <p class="text-sm text-gray-600 dark:text-gray-400">
                 {{ __('Rating:') }} {{ $manga['averageScore'] }}%
@@ -75,13 +75,9 @@
                         <i class="fa-solid fa-smile-beam fa-sm text-emerald-400"></i>
                         @break
                     @case($manga['averageScore'] >= 76 && $manga['averageScore'] <= 85)
-                        <i class="fa-solid fa-laugh-beam fa-sm text-green-600"></i>
+                        <i class="fa-solid fa-laugh-beam fa-sm text-blue-500"></i>
                         @break
-                    @case($manga['averageScore'] >= 86 && $manga['averageScore'] <= 95)
-                        <i class="fa-solid fa-face-grin-stars fa-sm text-blue-500"></i>
-
-                        @break
-                    @case($manga['averageScore'] >= 96 && $manga['averageScore'] <= 100)
+                    @case($manga['averageScore'] >= 86)
                         <i class="fa-solid fa-trophy fa-sm text-yellow-500"></i>
                         @break
                 @endswitch
