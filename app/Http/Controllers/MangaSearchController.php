@@ -20,6 +20,62 @@ class MangaSearchController extends Controller
         ]);
     }
 
+    /**
+     * Obtener los autores principales para una serie.
+     */
+    private function getMainAuthors($staff)
+    {
+        $mainAuthors = [];
+        $validRoles = [
+            'story & art',
+            'story',
+            'art',
+            'illustration',
+            'original creator'
+        ];
+
+        if (!empty($staff['nodes']) && !empty($staff['edges'])) {
+            $processedAuthors = [];
+
+            foreach ($staff['nodes'] as $index => $staffNode) {
+                $role = strtolower($staff['edges'][$index]['role'] ?? '');
+                $name = $staffNode['name']['full'] ?? 'Autor desconocido';
+                $id = $staffNode['id'] ?? null;
+
+                // Verificar si ya procesamos este autor
+                $authorKey = $id ?: $name;
+                if (isset($processedAuthors[$authorKey])) {
+                    continue;
+                }
+
+                $authorRoles = [];
+
+                foreach ($validRoles as $validRole) {
+                    if (str_contains($role, $validRole)) {
+                        $authorRoles[] = $validRole;
+                        break;
+                    }
+                }
+
+                if (!empty($authorRoles)) {
+                    // Eliminar roles duplicados y mantener orden
+                    $uniqueRoles = array_unique($authorRoles);
+
+                    $mainAuthors[] = [
+                        'id' => $id,
+                        'type' => implode(', ', $uniqueRoles),
+                        'name' => $name
+                    ];
+
+                    // Marcar autor como procesado
+                    $processedAuthors[$authorKey] = true;
+                }
+            }
+        }
+
+        return $mainAuthors;
+    }
+
     public function search(Request $request)
     {
         $request->validate([
@@ -112,39 +168,9 @@ class MangaSearchController extends Controller
 
         // Agregar autores principales
         $results = array_map(function ($manga) {
-            $mainAuthors = [];
-
-            if (!empty($manga['staff']['nodes']) && !empty($manga['staff']['edges'])) {
-                $validRoles = [
-                    'story & art',
-                    'story',
-                    'art',
-                    'illustration',
-                    'original creator'
-                ];
-
-                foreach ($manga['staff']['nodes'] as $index => $staff) {
-                    $role = strtolower($manga['staff']['edges'][$index]['role'] ?? '');
-                    $name = $staff['name']['full'] ?? 'Autor desconocido';
-                    $id = $staff['id'] ?? null;
-
-                    foreach ($validRoles as $validRole) {
-                        if (str_contains($role, $validRole)) {
-                            $mainAuthors[] = [
-                                'id' => $id,
-                                'type' => $validRole,
-                                'name' => $name
-                            ];
-
-                            if ($validRole === 'story & art') {
-                                break 2;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return array_merge($manga, ['main_authors' => $mainAuthors]);
+            return array_merge($manga, [
+                'main_authors' => $this->getMainAuthors($manga['staff'])
+            ]);
         }, $results);
 
 //        dd($results);
@@ -212,28 +238,11 @@ class MangaSearchController extends Controller
         $results = array_filter($data, fn($m) => empty($m['isAdult']));
 
         // Añadimos autores principales
-        $results = array_map(function ($m) {
-            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
-            $main = [];
-            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
-                foreach ($m['staff']['nodes'] as $i => $staff) {
-                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
-                    foreach ($validRoles as $vr) {
-                        if (str_contains($role, $vr)) {
-                            $main[] = [
-                                'id' => $staff['id'],
-                                'type' => $vr,
-                                'name' => $staff['name']['full'] ?? 'Desconocido',
-                            ];
-                            if ($vr === 'story & art') break 2;
-                        }
-                    }
-                }
-            }
-            $m['main_authors'] = $main;
-            return $m;
+        $results = array_map(function ($manga) {
+            return array_merge($manga, [
+                'main_authors' => $this->getMainAuthors($manga['staff'])
+            ]);
         }, $results);
-
         return [
             'popular' => $results,
         ];
@@ -297,28 +306,11 @@ class MangaSearchController extends Controller
         $results = array_filter($data, fn($m) => empty($m['isAdult']));
 
         // Añadimos autores principales
-        $results = array_map(function ($m) {
-            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
-            $main = [];
-            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
-                foreach ($m['staff']['nodes'] as $i => $staff) {
-                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
-                    foreach ($validRoles as $vr) {
-                        if (str_contains($role, $vr)) {
-                            $main[] = [
-                                'id' => $staff['id'],
-                                'type' => $vr,
-                                'name' => $staff['name']['full'] ?? 'Desconocido',
-                            ];
-                            if ($vr === 'story & art') break 2;
-                        }
-                    }
-                }
-            }
-            $m['main_authors'] = $main;
-            return $m;
+        $results = array_map(function ($manga) {
+            return array_merge($manga, [
+                'main_authors' => $this->getMainAuthors($manga['staff'])
+            ]);
         }, $results);
-
         return [
             'score' => $results,
         ];
@@ -382,28 +374,11 @@ class MangaSearchController extends Controller
         $results = array_filter($data, fn($m) => empty($m['isAdult']));
 
         // Añadimos autores principales
-        $results = array_map(function ($m) {
-            $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
-            $main = [];
-            if (!empty($m['staff']['nodes']) && !empty($m['staff']['edges'])) {
-                foreach ($m['staff']['nodes'] as $i => $staff) {
-                    $role = strtolower($m['staff']['edges'][$i]['role'] ?? '');
-                    foreach ($validRoles as $vr) {
-                        if (str_contains($role, $vr)) {
-                            $main[] = [
-                                'id' => $staff['id'],
-                                'type' => $vr,
-                                'name' => $staff['name']['full'] ?? 'Desconocido',
-                            ];
-                            if ($vr === 'story & art') break 2;
-                        }
-                    }
-                }
-            }
-            $m['main_authors'] = $main;
-            return $m;
+        $results = array_map(function ($manga) {
+            return array_merge($manga, [
+                'main_authors' => $this->getMainAuthors($manga['staff'])
+            ]);
         }, $results);
-
         return [
             'trending' => $results,
         ];

@@ -145,25 +145,44 @@ class SeriesController extends Controller
 
         $media = $response->json('data.Media');
 
-        // 3) Extraer autores principales (story, art, story & art)
-        // Queremos descartar traductores y otros roles redundantes de la API
-        $validRoles = ['story & art', 'story', 'art', 'illustration'];
+        // extraer los autores principales de la serie
+        $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
         $mainAuthors = [];
-        if (!empty($media['staff']['nodes'])) {
-            foreach ($media['staff']['nodes'] as $idx => $node) {
-                $role = strtolower($media['staff']['edges'][$idx]['role'] ?? '');
-                foreach ($validRoles as $vr) {
-                    if (str_contains($role, $vr)) {
-                        $mainAuthors[] = [
-                            'id' => $node['id'],
-                            'name' => $node['name']['full'],
-                            'role' => $vr,
-                        ];
-                        // Si el rol es story & art, lo tomamos como autor principal y salimos
-                        if ($vr === 'story & art') {
-                            break 2;
-                        }
+        if (!empty($media['staff']['nodes']) && !empty($media['staff']['edges'])) {
+            $processedAuthors = [];
+
+            foreach ($media['staff']['nodes'] as $index => $staffNode) {
+                $role = strtolower($media['staff']['edges'][$index]['role'] ?? '');
+                // Evitar procesar autores duplicados
+                $name = strtolower($staffNode['name']['full'] ?? '');
+                $id = $staffNode['id'] ?? null;
+                // Verificar si ya procesamos este autor
+                $authorKey = $id ?: $name;
+                if (isset($processedAuthors[$authorKey])) {
+                    continue;
+                }
+
+                $authorRoles = [];
+
+                foreach ($validRoles as $validRole) {
+                    if (str_contains($role, $validRole)) {
+                        $authorRoles[] = $validRole;
+                        break;
                     }
+                }
+
+                if (!empty($authorRoles)) {
+                    // Eliminar roles duplicados y mantener orden
+                    $uniqueRoles = array_unique($authorRoles);
+
+                    $mainAuthors[] = [
+                        'id' => $id,
+                        'name' => $name,
+                        'role' => implode(', ', $uniqueRoles)
+                    ];
+
+                    // Marcar autor como procesado
+                    $processedAuthors[$authorKey] = true;
                 }
             }
         }

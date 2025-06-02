@@ -149,7 +149,7 @@
         <p class="line-clamp-1 sm:line-clamp-4 text-sm text-gray-600 dark:text-gray-400">
             @foreach ($manga['main_authors'] as $author)
                 <a href="{{ route('authors.show', $author['id']) }}" class="!text-blue-500 !hover:underline">
-                    @if ($author['type'] === 'story & art')
+                    @if (count($author) === 1)
                         {{ $author['name'] }}
                     @else
                         {{ ucwords($author['type']) }}: {{ $author['name'] }}
