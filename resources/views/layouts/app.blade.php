@@ -23,7 +23,7 @@
     <!-- Page Heading -->
     @isset($header)
         <header>
-            <div class="!text-4xl max-w-7xl mx-auto pt-6 px-4 sm:px-6 lg:px-8">
+            <div class="!text-4xl max-w-7xl mx-auto pt-6 sm:pt-0 px-4 sm:px-6 lg:px-8">
                 {{ $header }}
             </div>
         </header>
@@ -31,6 +31,7 @@
 
     <!-- Page Content -->
     <main class="pb-16 sm:pb-0">
+        <x-back-to-top></x-back-to-top>
         {{ $slot }}
     </main>
 </div>

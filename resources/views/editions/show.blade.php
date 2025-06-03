@@ -12,7 +12,7 @@
                 {{-- Imagen con click modal --}}
                 <div class="relative w-48 h-max flex-shrink-0">
                     <x-link-button href="{{ route('series.show', ['anilistId' => $edition->series_id, 'slug' => \Illuminate\Support\Str::slug($edition->series->title)]) }}"
-                        class="absolute !rounded-full top-0 -left-20 sm:-top-14 sm:left-0 z-20"
+                        class="absolute !rounded-full mt-3 top-0 -left-20 sm:-top-14 sm:left-0 xl:top-0 xl:-left-20 z-20"
                         x-data="{ isRotating: false }"
                         @click="isRotating = true;
                                 setTimeout(() => isRotating = false, 250)">
@@ -103,7 +103,7 @@
                         <x-text class="!pt-0">
                             {{ count($volumes) }} {{__('volumes')}}
                         </x-text>
-                        <div class="flex flex-row flex-wrap gap-y-5 gap-x-12 sm:gap-x-4 justify-start">
+                        <div class="flex flex-row flex-wrap gap-y-5 gap-x-12 sm:gap-x-4 justify-center sm:justify-start">
                             @foreach($volumes as $volume)
                                 <x-volume-card
                                     :volume="$volume"
