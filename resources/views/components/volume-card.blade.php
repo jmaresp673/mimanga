@@ -74,14 +74,15 @@
                  x-cloak>
 
                 <!-- Cabecera -->
-                <div class="p-4 border-b  flex justify-between items-center border-gray-500 bg-gray-600 dark:border-gray-700 dark:bg-gray-900">
+                <div
+                    class="p-4 border-b  flex justify-between items-center border-gray-500 bg-indigo-900 dark:border-gray-700 dark:bg-gray-900">
                     <div>
                         <h3 class="text-xl font-bold text-white">
                             <span>{{ $volume->volume_number }}</span>
                             -
                             <span>{{$edition->localized_title}}</span>
                         </h3>
-                        <p class="text-sm text-gray-400 mt-1">
+                        <p class="text-sm text-gray-200 mt-1">
                             {{__('Edition')}}: {{$edition->publisher->name}}
                         </p>
                     </div>
@@ -101,11 +102,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                         <!-- Portada -->
                         <div class="col-span-2 sm:col-span-1 flex flex-col justify-center items-center gap-2 w-full">
+                            {{-- Imagen con click modal --}}
                             <img src='{{ $volume->cover_image_url }}'
-                                 class="w-40 h-auto rounded-lg shadow-xl mx-auto"
-                                 alt="Portada del volumen">
+                                 class="cursor-pointer w-40 h-auto rounded-lg shadow-xl mx-auto"
+                                 alt="Portada del volumen"
+                                 onclick="document.getElementById('my_modal_{{$volume->volume_number}}').showModal()">
+                            <dialog id="my_modal_{{$volume->volume_number}}" class="modal">
+                                <div class="modal-box bg-transparent">
+                                    <img src="{{ $volume->cover_image_url }}"
+                                         alt="Portada del volumen"
+                                         class="w-full h-auto rounded shadow-lg flex-shrink-0">
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button></button>
+                                </form>
+                            </dialog>
                             <div class="text-center">
-                                <p class="text-lg font-semibold"> {{ $volume->price }} €</p>
+                                <p class="text-lg font-semibold">PVP: {{ $volume->price }} €</p>
                             </div>
                         </div>
 
@@ -121,6 +134,13 @@
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
                                     <p> {{ __('total pages: ') }}{{ $volume->total_pages }}</p>
                                 </div>
+
+                                @if($volume->isbn)
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
+                                        <p> {{ __('ISBN: ') }}{{ $volume->isbn }}</p>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Botones de accion --}}
@@ -133,8 +153,7 @@
                                         <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToLibrary"
-                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold
-                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold transition-transform duration-100 hover:scale-105 active:scale-95">
                                                     <i class="fa-solid fa-square-plus"></i>
                                                 </button>
                                             </x-slot>
@@ -144,8 +163,7 @@
                                         <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToWishlist"
-                                                        class="btn-secondary rounded-full p-2 w-10 h-10 font-bold
-                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                        class="btn-secondary rounded-full p-2 w-10 h-10 font-bold transition-transform duration-100 hover:scale-105 active:scale-95">
                                                     <i class="fa-solid fa-heart-circle-plus"></i>
                                                 </button>
                                             </x-slot>
@@ -159,8 +177,7 @@
                                         <x-hover-text position="top">
                                             <x-slot name="trigger">
                                                 <button @click="addToLibrary"
-                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold
-                                   transition-transform duration-100 hover:scale-105 active:scale-95">
+                                                        class="btn-primary rounded-full p-2 w-10 h-10 font-bold transition-transform duration-100 hover:scale-105 active:scale-95">
                                                     <i class="fa-solid fa-square-plus"></i>
                                                 </button>
                                             </x-slot>

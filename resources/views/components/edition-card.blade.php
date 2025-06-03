@@ -3,13 +3,14 @@
     'cover',        // URL de la portada
     'title',        // Título localizado de la edición
     'lang',         // Código de idioma, p.ej. 'ES', 'EN'
-    'count'         // Cantidad de volúmenes editados
+    'count',         // Cantidad de volúmenes editados
+    'publisher'     // Nombre del editor
 ])
 
 <a href="{{ route('editions.show', ['id' => $id, 'slug' => \Illuminate\Support\Str::slug($title)]) }}"
-   class="group w-full h-full flex flex-col items-center justify-center text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-200 ease-in-out">
+   class="group mx-auto rounded-lg w-fit h-full flex flex-col items-center justify-center text-gray-800 dark:text-gray-100 bg-white/50 hover:bg-gray-100  dark:bg-gray-800/70 dark:hover:bg-gray-800 transition-all duration-200">
     {{-- Tarjeta de edición --}}
-    <div class="border rounded p-4 shadow-md bg-white dark:bg-gray-800 flex flex-col items-center">
+    <div class="border rounded-lg p-4 shadow-md flex flex-col items-center">
         {{-- Portada del primer volumen --}}
         @if($cover)
             <img src="{{ $cover }}"
@@ -22,18 +23,15 @@
         @endif
 
         {{-- Información de la edición completa --}}
-        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-center mb-2">
+        <h4 class="text-lg text-wrap font-semibold text-gray-800 dark:text-gray-100 text-center mb-2">
             {{ $title }}
         </h4>
 
         <div class="flex flex-row text-sm gap-2 justify-center items-center text-gray-600 dark:text-gray-400">
-            <div class="rounded-full w-5 h-5 bg-cover bg-center"
+            <div class="line-clamp-1 rounded-full w-5 h-5 bg-cover bg-center flex-shrink-0"
                  style="background-image: url('/media/lang/{{ $lang }}.png');"></div>
             &middot; {{ $count }}
-            <svg xmlns="http://www.w3.org/2000/svg" class="inline-block w-4 h-4" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-            </svg>
+            &middot; {{ $publisher }}
         </div>
     </div>
 </a>

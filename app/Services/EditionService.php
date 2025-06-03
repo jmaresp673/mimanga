@@ -119,6 +119,9 @@ class EditionService
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
         try {
+//            $resp = Http::get('https://www.whakoom.com/search?s=Go!%20Go!%20Loser%20Ranger!&fl=9');
+//            dd(json_encode($resp->body())  );
+
             $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $romaji]);
             // fallback, si no se encuentra el título en romaji, buscar por nativo
             if ($resp->json()['colecciones'] === []) {

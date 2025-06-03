@@ -21,21 +21,22 @@
     <a href="{{ route('series.show', ['anilistId' => $manga['id'], 'slug' => \Illuminate\Support\Str::slug($manga['title']['romaji'])]) }}"
        class="!text-blue-500 !hover:underline">
         <!-- Placeholder mientras la imagen carga -->
-        <div x-show="!loaded" x-cloak class="w-full h-80 bg-gray-300 animate-pulse rounded"></div>
+        <div x-show="!loaded" x-cloak class="w-full h-auto bg-gray-300 animate-pulse rounded"></div>
 
         <!-- Imagen con fade-in al cargar -->
-        <img
-            x-ref="img"
-            loading="lazy"
-            @load="loaded = true"
-            :class="{ 'opacity-0': !loaded, 'opacity-100': loaded }"
-            class="transition-opacity duration-700 w-80 object-cover rounded "
-            src="{{ $manga['coverImage']['large'] }}"
-            alt="{{ $manga['title']['romaji'] }}"
-        >
+        <div class="w-fit mx-auto mb-1">
+            <img
+                x-ref="img"
+                loading="lazy"
+                @load="loaded = true"
+                :class="{ 'opacity-0': !loaded, 'opacity-100': loaded }"
+                class="transition-opacity duration-700 mx-auto h-52 sm:h-64 lg:h-[22rem] object-cover rounded "
+                src="{{ $manga['coverImage']['large'] }}"
+                alt="{{ $manga['title']['romaji'] }}"
+            >
 
-        <div class="flex flex-row justify-between">
-            <p class="text-xs
+            <div class="flex flex-row justify-between">
+                <p class="text-xs
             @switch($manga['status'])
                 @case('FINISHED') text-green-600 @break
                 @case('RELEASING') text-blue-500 @break
@@ -44,40 +45,41 @@
                 @case('HIATUS') text-orange-500 @break
                 @default text-gray-600 @break
              @endswitch">
-                @switch($manga['status'])
-                    @case('FINISHED')
-                        {{ __('FINISHED') }}
-                        @break
-                    @case('RELEASING')
-                        {{ __('RELEASING') }}
-                        @break
-                    @case('NOT_YET_RELEASED')
-                        {{ __('NOT YET RELEASED') }}
-                        @break
-                    @case('CANCELLED')
-                        {{ __('CANCELLED') }}
-                        @break
-                    @case('HIATUS')
-                        {{ __('HIATUS') }}
-                        @break
-                    @default
-                        {{ __('UNKNOWN') }}
-                        @break
-                @endswitch
-            </p>
-            <p class="text-xs text-gray-600 dark:text-gray-400">
-                @switch($manga['format'])
-                    @case('MANGA')
-                        {{ __('MANGA') }}
-                        @break
-                    @case('NOVEL')
-                        {{ __('NOVEL') }}
-                        @break
-                    @case('ONE_SHOT')
-                        {{ __('ONE SHOT') }}
-                        @break
-                @endswitch
-            </p>
+                    @switch($manga['status'])
+                        @case('FINISHED')
+                            {{ __('FINISHED') }}
+                            @break
+                        @case('RELEASING')
+                            {{ __('RELEASING') }}
+                            @break
+                        @case('NOT_YET_RELEASED')
+                            {{ __('NOT YET RELEASED') }}
+                            @break
+                        @case('CANCELLED')
+                            {{ __('CANCELLED') }}
+                            @break
+                        @case('HIATUS')
+                            {{ __('HIATUS') }}
+                            @break
+                        @default
+                            {{ __('UNKNOWN') }}
+                            @break
+                    @endswitch
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                    @switch($manga['format'])
+                        @case('MANGA')
+                            {{ __('MANGA') }}
+                            @break
+                        @case('NOVEL')
+                            {{ __('NOVEL') }}
+                            @break
+                        @case('ONE_SHOT')
+                            {{ __('ONE SHOT') }}
+                            @break
+                    @endswitch
+                </p>
+            </div>
         </div>
         <div class="text-center">
             <x-text
@@ -116,19 +118,19 @@
             </p>
         </div>
         <div class="flex flex-col sm:flex-row">
-{{--            <p class="text-sm text-gray-600 dark:text-gray-400">--}}
-{{--                @if ($manga['chapters'])--}}
-{{--                    {{ $manga['chapters'] }}--}}
-{{--                    @if($manga['chapters'] === 1)--}}
-{{--                        {{ __('Chapter') }}--}}
-{{--                    @else--}}
-{{--                        {{ __('Chapters') }}--}}
-{{--                    @endif--}}
-{{--                @endif--}}
-{{--            </p>--}}
+            {{--            <p class="text-sm text-gray-600 dark:text-gray-400">--}}
+            {{--                @if ($manga['chapters'])--}}
+            {{--                    {{ $manga['chapters'] }}--}}
+            {{--                    @if($manga['chapters'] === 1)--}}
+            {{--                        {{ __('Chapter') }}--}}
+            {{--                    @else--}}
+            {{--                        {{ __('Chapters') }}--}}
+            {{--                    @endif--}}
+            {{--                @endif--}}
+            {{--            </p>--}}
             <p class="text-sm text-gray-600 dark:text-gray-400">
                 @if ($manga['volumes'])
-{{--                    <span class="hidden sm:inline">&nbsp;-</span>--}}
+                    {{--                    <span class="hidden sm:inline">&nbsp;-</span>--}}
                     {{ $manga['volumes'] }}
                     @if($manga['volumes'] === 1)
                         {{ __('Volume') }}
@@ -149,7 +151,7 @@
         <p class="line-clamp-1 sm:line-clamp-4 text-sm text-gray-600 dark:text-gray-400">
             @foreach ($manga['main_authors'] as $author)
                 <a href="{{ route('authors.show', $author['id']) }}" class="!text-blue-500 !hover:underline">
-                    @if (count($author) === 1)
+                    @if (count($manga['main_authors']) === 1)
                         {{ $author['name'] }}
                     @else
                         {{ ucwords($author['type']) }}: {{ $author['name'] }}

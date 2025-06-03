@@ -3,12 +3,13 @@
         <x-main-container>
             {{-- Top: imagen / título y autor --}}
             <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 mb-2 sm:mb-8">
-                <div class="w-48 h-auto rounded flex-shrink-0">
+                <div class="relative w-48 h-auto rounded flex-shrink-0">
                     {{-- Imagen con click modal --}}
                     <img src="{{ $media['coverImage']['large'] }}"
                          alt="{{ $media['title']['romaji'] }}"
-                         class="w-48 h-auto rounded shadow-lg flex-shrink-0"
+                         class="cursor-pointer w-48 h-auto rounded shadow-lg flex-shrink-0"
                          onclick="my_modal_2.showModal()">
+                    <i class="fa-solid fa-magnifying-glass absolute top-3 right-3 text-md rounded-full p-2 text-indigo-500  bg-gray-800/80 dark:bg-white/80 pointer-events-none transition-all duration-200"></i>
                     {{-- Ventana modal con imagen --}}
                     <dialog id="my_modal_2" class="modal">
                         <div class="modal-box bg-transparent">
@@ -52,7 +53,7 @@
                         class="flex flex-row flex-wrap justify-center sm:justify-start items-center gap-2 mt-1 !p-0">
                         @foreach($mainAuthors as $a)
                             <span class="flex flex-col sm:flex-row flex-wrap justify-center items-center">
-                            <div>{{ ucfirst($a['role']) }}:&nbsp;</div>
+                            <div>{{ ucwords($a['role']) }}:&nbsp;</div>
                             <a href="{{ $a['id']
                                 ? route('authors.show', $a['id'])
                                 : '#' }}"
@@ -81,23 +82,25 @@
                     @endphp
 
                     @if($showCollapse)
-                        <div class="w-full px-3 py-3">
+                        <div class="visible sm:hidden w-full px-3 py-3">
                             <div tabindex="0"
-                                 class="visible sm:hidden collapse collapse-plus border-l-4 border-gray-900 dark:border-gray-300 rounded-l-xl px-3">
-                                <x-text class="!p-0 mx-0 collapse-title font-semibold !pb-0 w-auto text-wrap">
+                                 class="visible sm:hidden collapse collapse-plus border-l-4 border-gray-800 dark:border-gray-300 rounded-l-xl px-3 py-2">
+                                <x-text class="!p-0 text-left mx-0 collapse-title font-semibold !pb-0 w-auto text-wrap">
                                     {!! htmlspecialchars_decode($firstPart) !!}
                                 </x-text>
-                                <x-text class="!p-0 mx-0 collapse-content text-sm !pt-1 text-wrap">
+                                <x-text class="!p-0 text-left mx-0 collapse-content text-sm !pt-1 text-wrap">
                                     {!! htmlspecialchars_decode($secondPart) !!}
                                 </x-text>
                             </div>
                         </div>
                     @else
-                        <x-text class="block sm:hidden border-l-4 border-gray-900 dark:border-gray-300 rounded-l-xl !py-2 mx-3 sm:mx-0">
+                        <x-text
+                            class="block text-left sm:hidden border-l-4 border-gray-800 dark:border-gray-300 rounded-l-xl !py-2 mx-3 sm:mx-0">
                             {!! $media['description'] !!}
                         </x-text>
                     @endif
-                    <x-text class="hidden border-l-4 border-gray-900 dark:border-gray-300 rounded-l-xl !py-2 sm:block mx-3 mt-3 sm:mx-0">
+                    <x-text
+                        class="hidden text-left border-l-4 border-gray-800 dark:border-gray-300 rounded-l-xl !py-2 sm:block mx-3 mt-3 sm:mx-0">
                         {!! $media['description'] !!}
                     </x-text>
                 </div>
@@ -106,7 +109,8 @@
             {{-- Cuerpo: sidebar / ediciones --}}
             <div class="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-6">
                 {{-- Sidebar info --}}
-                <aside class="text-gray-900 dark:text-gray-100 space-y-4 col-span-3 sm:col-span-1 bg-white dark:bg-gray-800 p-4 sm:rounded-md shadow w-full">
+                <aside
+                    class="text-gray-900 dark:text-gray-100 space-y-4 col-span-3 sm:col-span-1 bg-white dark:bg-gray-800 p-4 sm:rounded-md shadow w-full">
                     <p><strong>{{__('Format: ')}}</strong>
                         @switch($media['format'])
                             @case('MANGA')
@@ -172,10 +176,10 @@
                 {{-- Ediciones --}}
                 <section class="col-span-3 bg-white dark:bg-gray-800 p-4 sm:rounded-md shadow relative overflow-hidden"
                          style="background-image: url('{{ $media['bannerImage'] }}'); background-size: cover; background-position: center;">
-                    <!-- Capa oscura (solo fondo) -->
+                    <!-- Capa oscura (fondo) -->
                     <div class="absolute inset-0 bg-black opacity-40 z-0"></div>
 
-                    <!-- Contenido (debe estar en una capa superior) -->
+                    <!-- Contenido -->
                     <div class="relative z-10 space-y-4"> <!-- Añade posición relativa y z-index mayor -->
                         <h3 class="text-xl font-semibold">{{__('Editions for this series')}}</h3>
 
@@ -189,10 +193,12 @@
                                     :count="$general['numbers_localized']"
                                     :edition="$general"
                                     :volumes="$editions"
+                                    :publisher="$general['localized_publisher']['name']"
                                 />
                             </div>
                         @else
-                            <p class="text-center text-gray-400 bg-gray-700/70 w-fit px-3 py-1 m-auto rounded-lg">No hay ediciones disponibles.</p>
+                            <p class="text-center text-gray-400 bg-gray-700/70 w-fit px-3 py-1 m-auto rounded-lg">No hay
+                                ediciones disponibles.</p>
                         @endif
                     </div>
                 </section>

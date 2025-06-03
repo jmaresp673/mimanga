@@ -23,21 +23,28 @@ class EditionController extends Controller
      */
     public static function search(array $media, array $mainAuthors, int $anilistId, string $lang): array
     {
-        try {
-            $data = (new EditionService)->fetchByRomajiAndLang(
-                $media['title']['native'],
-                $lang,
-                $media['title']['romaji'],
-                $media['title']['english'] ?? "",
-                $media['format'] ?? 'MANGA'
-            ); // pasamos el romaji para buscar la edicion y el idioma
-        } catch (ErrorException $e) {
-            // Si no encuentra la edicion o hay algun problema, marcamos $spanishTitle como null
-            // para no mostrarlo
+        $cacheKey = 'edition_' . md5(json_encode([
+            $media['title']['native'],
+            $lang,
+            $media['title']['romaji'],
+            $media['title']['english'] ?? "",
+            $media['format'] ?? 'MANGA'
+        ]));
 
-            // hacemos un log del error en consola
-            Log::error('Error fetching Spanish edition: ' . $e->getMessage());
-        }
+        $data = cache()->remember($cacheKey, now()->addMinutes(30), function () use ($media, $lang) {
+            try {
+                return (new EditionService)->fetchByRomajiAndLang(
+                    $media['title']['native'],
+                    $lang,
+                    $media['title']['romaji'],
+                    $media['title']['english'] ?? "",
+                    $media['format'] ?? 'MANGA'
+                );
+            } catch (ErrorException $e) {
+                Log::error('Error fetching Spanish edition: ' . $e->getMessage());
+                return null;
+            }
+        });
 
         // Si no existe la edicion, la creamos
         //id series_id localized_title	publisher_id language edition_total_volumes format country_code

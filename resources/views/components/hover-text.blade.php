@@ -24,7 +24,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         @class([
-            'absolute z-[999] px-3 py-2 text-sm text-white bg-gray-800 rounded-md shadow-lg',
+            'absolute z-[999] px-3 py-2 text-sm text-white dark:text-gray-900 bg-gray-800 dark:bg-gray-50 rounded-md shadow-lg',
             'bottom-full mb-2' => $position === 'top',
             'top-full mt-2' => $position === 'bottom',
             'right-full mr-2' => $position === 'left',

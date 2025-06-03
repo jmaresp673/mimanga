@@ -55,7 +55,7 @@
     <div class="carousel pt-5 h-min w-full hidden md:flex lg:hidden">
         @foreach($chunksMd as $index => $chunk)
             <div id="{{$name}}-md-slide{{ $index + 1 }}" class="carousel-item h-min relative w-full">
-                <div class="grid h-min grid-cols-3 gap-6 mx-auto">
+                <div class="grid h-min grid-cols-3 gap-4 mx-auto">
                     @foreach($chunk as $manga)
                         @include('manga._card', ['manga' => $manga])
                     @endforeach
@@ -75,7 +75,7 @@
     <div class="carousel pt-5 h-min w-full flex md:hidden">
         @foreach($chunksSm as $index => $chunk)
             <div id="{{$name}}-sm-slide{{ $index + 1 }}" class="carousel-item h-min relative w-full">
-                <div class="h-min grid grid-cols-2 gap-6 mx-auto">
+                <div class="h-min grid grid-cols-2 gap-2 mx-auto">
                     @foreach($chunk as $manga)
                         @include('manga._card', ['manga' => $manga])
                     @endforeach

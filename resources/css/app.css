@@ -11,7 +11,7 @@
 .shadow-comic-button {
     box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
 }
-.btn-primary { background: #00f7ff; color: white; }
+.btn-primary { background: #6366f1; color: white; }
 .btn-secondary { background: #006a63; color: white; }
 .btn-danger { background: #ff0000; color: white; }
 /*@media (max-width: 640px) {*/
