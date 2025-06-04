@@ -23,7 +23,7 @@
     $chunksSm = array_chunk($items, 2);
 @endphp
 
-<div class="h-min pt-3">
+<div class="h-min">
     <x-text class="text-xl sm:text-2xl font-bold ml-3 !pb-0 sm:text-center">
         {{ $title ?? $name }}
     </x-text>
@@ -72,10 +72,10 @@
     </div>
 
     {{-- Mobile (<768px): 2 por slide --}}
-    <div class="carousel pt-5 h-min w-full flex md:hidden">
+    <div class="carousel pt-4 h-min w-full flex md:hidden">
         @foreach($chunksSm as $index => $chunk)
             <div id="{{$name}}-sm-slide{{ $index + 1 }}" class="carousel-item h-min relative w-full">
-                <div class="h-min grid grid-cols-2 gap-2 mx-auto">
+                <div class="h-min grid grid-cols-2 gap-2 mb-3 mx-auto">
                     @foreach($chunk as $manga)
                         @include('manga._card', ['manga' => $manga])
                     @endforeach
