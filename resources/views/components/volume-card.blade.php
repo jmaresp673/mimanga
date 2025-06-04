@@ -40,15 +40,21 @@
                        transition-all duration-300 overflow-hidden
                        flex flex-col items-center justify-center text-center"
                  :class="isHovered && !openModal ? 'opacity-100 max-h-96' : ''">
-                <span class="text-xs text-gray-300">
+                @if($volume->total_pages)
+                    <span class="text-xs text-gray-300">
                     {{ $volume->total_pages }} {{__('pages')}}
                 </span>
-                <p class="text-xs text-gray-300">
-                    {{ $volume->price }} €
-                </p>
-                <p class="text-xs text-gray-300">
-                    {{ $volume->release_date->format('d/m/Y') }}
-                </p>
+                    <p class="text-xs text-gray-300">
+                        {{ $volume->price }} €
+                    </p>
+                    <p class="text-xs text-gray-300">
+                        {{ $volume->release_date->format('d/m/Y') }}
+                    </p>
+                @else
+                    <p class="text-xs text-gray-300">
+                        {{__('Not available yet')}}
+                    </p>
+                @endif
             </div>
         </div>
     </div>
@@ -99,7 +105,7 @@
 
                 <!-- Contenido -->
                 <div class="p-6 bg-white dark:bg-gray-800">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                         <!-- Portada -->
                         <div class="col-span-2 sm:col-span-1 flex flex-col justify-center items-center gap-2 w-full">
                             {{-- Imagen con click modal --}}
@@ -118,23 +124,33 @@
                                 </form>
                             </dialog>
                             <div class="text-center">
-                                <p class="text-lg font-semibold">PVP: {{ $volume->price }} €</p>
+                                @if($volume->price == 0)
+                                    <p class="text-lg font-semibold">{{__('PVP: ')}} <span
+                                            class="text-sm font-semibold text-gray-400">TBA</span></p>
+                                @else
+                                    <p class="text-lg font-semibold">{{__('PVP: ')}} {{ $volume->price }} €</p>
+                                @endif
                             </div>
                         </div>
 
                         <!-- Detalles -->
                         <div class="col-span-2 space-y-4 text-center sm:text-left">
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
-                                    <p> {{ $volume->release_date->format('d/m/Y') }}</p>
-                                </div>
+                                @if($volume->total_pages)
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
+                                        <p> {{ $volume->release_date->format('d/m/Y') }}</p>
+                                    </div>
 
-                                <div>
-                                    <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                    <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
-                                </div>
-
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
+                                        <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
+                                    </div>
+                                @else
+                                    <div class="col-span-2 text-center sm:text-left">
+                                        <h4 class="text-lg font-semibold text-gray-400 mb-1">{{__('Not available yet')}}</h4>
+                                    </div>
+                                @endif
                                 @if($volume->isbn)
                                     <div>
                                         <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>

@@ -1,7 +1,6 @@
 @props([
     'volume' => \App\Models\Volume::class,
 ])
-{{--@dd($volume->pivot->purchase_date)--}}
 <div x-data="{
     openModal: false,
     selectedVolume: null,
@@ -39,12 +38,18 @@
                        transition-all duration-300 overflow-hidden
                        flex flex-col items-center justify-center text-center"
                  :class="isHovered && !openModal ? 'opacity-100 max-h-96' : ''">
-                <span class="text-xs text-gray-300">
+                @if($volume->total_pages)
+                    <span class="text-xs text-gray-300">
                     {{ $volume->total_pages }} {{__('pages')}}
                 </span>
+                @else
+                    <span class="text-xs text-gray-300">
+                    {{__('Not available yet')}}
+                </span>
+                @endif
                 @if($volume->pivot->purchase_date)
                     <p class="text-xs text-gray-300">
-                        Purchase date:
+                        {{__('Purchase date:')}}
                     </p>
                     <p class="text-xs text-gray-300">
                         {{ \Illuminate\Support\Carbon::parse($volume->pivot->purchase_date)->format('d/m/Y') }}
@@ -78,7 +83,7 @@
                 <div class="p-4 border-b  flex justify-between items-center border-gray-500 bg-gray-600 dark:border-gray-700 dark:bg-gray-900">
                     <div>
                         <a href="{{ route('editions.show', ['id' => $volume->edition->id, 'slug' => Str::slug($volume->edition->localized_title, '-')]) }}"
-                        class="w-fit">
+                           class="w-fit">
                             <h3 class="w-auto text-xl font-bold text-white hover:text-blue-600 transition-colors duration-300">
                                 {{--                            {{ $volume->edition['localized_title'] }}--}}
                                 <span>{{$volume->edition['localized_title']}}</span>
@@ -99,30 +104,53 @@
 
                 <!-- Contenido -->
                 <div class="p-6 bg-white dark:bg-gray-800">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                         <!-- Portada -->
                         <div class="col-span-2 sm:col-span-1 flex flex-col justify-center items-center gap-2 w-full">
+                            {{-- Imagen con click modal --}}
                             <img src='{{ $volume->cover_image_url }}'
-                                 class="w-40 h-auto rounded-lg shadow-xl mx-auto"
-                                 alt="Portada del volumen">
+                                 class="cursor-pointer w-40 h-auto rounded-lg shadow-xl mx-auto"
+                                 alt="Portada del volumen"
+                                 onclick="document.getElementById('my_modal_{{$volume->id}}').showModal()">
+                            <dialog id="my_modal_{{$volume->id}}" class="modal">
+                                <div class="modal-box bg-transparent">
+                                    <img src="{{ $volume->cover_image_url }}"
+                                         alt="Portada del volumen"
+                                         class="w-full h-auto rounded shadow-lg flex-shrink-0">
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button></button>
+                                </form>
+                            </dialog>
                             <div class="text-center">
-                                <p class="text-lg font-semibold"> {{ $volume->price }} €</p>
+                                @if($volume->price == 0)
+                                    <p class="text-lg font-semibold">{{__('PVP: ')}} <span
+                                                class="text-sm font-semibold text-gray-400">TBA</span></p>
+                                @else
+                                    <p class="text-lg font-semibold">{{__('PVP: ')}} {{ $volume->price }} €</p>
+                                @endif
                             </div>
                         </div>
 
                         <!-- Detalles -->
                         <div class="col-span-2 space-y-4 text-center sm:text-left">
                             <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
-                                    <p> {{ $volume->release_date->format('d/m/Y') }}</p>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                    <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
-                                </div>
-                                @if($volume->pivot->purchase_date)
+                                @if($volume->total_pages)
                                     <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
+                                        <p> {{ $volume->release_date->format('d/m/Y') }}</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
+                                        <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
+                                    </div>
+                                @else
+                                    <div class="col-span-2 text-center sm:text-left">
+                                        <h4 class="text-lg font-semibold text-gray-400 mb-1">{{__('Not available yet')}}</h4>
+                                    </div>
+                                @endif
+                                @if($volume->pivot->purchase_date)
+                                    <div @if(!$volume->total_pages) class="col-span-2" @endif>
                                         <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Purchase Date:')}}</h4>
                                         <p>{{ \Illuminate\Support\Carbon::parse($volume->pivot->purchase_date)->format('d/m/Y') }}</p>
                                     </div>
