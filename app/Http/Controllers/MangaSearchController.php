@@ -33,6 +33,7 @@ class MangaSearchController extends Controller
             'illustration',
             'original creator'
         ];
+        $primaryOccupations = ['mangaka', 'writer', 'illustrator'];
 
         if (!empty($staff['nodes']) && !empty($staff['edges'])) {
             $processedAuthors = [];
@@ -45,6 +46,14 @@ class MangaSearchController extends Controller
                 // Verificar si ya procesamos este autor
                 $authorKey = $id ?: $name;
                 if (isset($processedAuthors[$authorKey])) {
+                    continue;
+                }
+
+                //Descarta autores cuya primary occupation no este en la lista de primary occupations
+                if (!array_intersect(
+                        array_map('strtolower', $staffNode['primaryOccupations']),
+                        array_map('strtolower', $primaryOccupations)
+                    )) {
                     continue;
                 }
 
@@ -209,7 +218,7 @@ class MangaSearchController extends Controller
                   endDate { year }
                   genres
                   staff {
-                    nodes { id name { full } }
+                    nodes { id name { full } primaryOccupationsprimaryOccupations }
                     edges { role }
                   }
                 }
@@ -277,7 +286,7 @@ class MangaSearchController extends Controller
                   endDate { year }
                   genres
                   staff {
-                    nodes { id name { full } }
+                    nodes { id name { full } primaryOccupations}
                     edges { role }
                   }
                 }
@@ -345,7 +354,7 @@ class MangaSearchController extends Controller
                   endDate { year }
                   genres
                   staff {
-                    nodes { id name { full } }
+                    nodes { id name { full } primaryOccupations}
                     edges { role }
                   }
                 }

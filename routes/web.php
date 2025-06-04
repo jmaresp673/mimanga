@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\EditionController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\UserVolumeController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\MangaSearchController;
 //Route::get('/dashboard', function () {
 //    return view('dashboard');
 //})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('change-language/{locale}', [LanguageController::class, 'changeLanguage'])->name('change.language');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 

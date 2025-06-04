@@ -80,14 +80,16 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
-                                             onclick="event.preventDefault();
+                            <x-dropdown-link class="border-b border-gray-200 dark:border-gray-600"
+                                                :href="route('logout')"
+                                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 <i class="fa-solid fa-right-to-bracket size-[1.2em]"></i>
                                 <span class="ml-2">{{ __('Log Out') }}</span>
                             </x-dropdown-link>
                         </form>
-                        <x-dark-button class="hidden sm:flex"></x-dark-button>
+                        <x-dark-button class="hidden sm:flex"/>
+                        <x-language-button class="hidden sm:flex"/>
                     </x-slot>
                 </x-dropdown>
             </div>
@@ -154,13 +156,8 @@
         </div>
 
         <div class="pt-2 pb-3 space-y-1">
-            {{--            <x-responsive-nav-link :href="route('manga.search')" :active="request()->routeIs('manga.search')">--}}
-            {{--                {{ __('Home') }}--}}
-            {{--            </x-responsive-nav-link>--}}
-            {{--            <x-responsive-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">--}}
-            {{--                {{ __('Library') }}--}}
-            {{--            </x-responsive-nav-link>--}}
-            <x-dark-button class="flex"></x-dark-button>
+            <x-dark-button class="flex"/>
+            <x-language-button class="flex"/>
         </div>
     </div>
 </nav>

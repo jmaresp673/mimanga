@@ -154,7 +154,23 @@
                     @if (count($manga['main_authors']) === 1)
                         {{ $author['name'] }}
                     @else
-                        {{ ucwords($author['type']) }}: {{ $author['name'] }}
+                        @switch($author['type'])
+                            @case('story & art')
+                                {{ __('Story & Art') }}
+                                @break
+                            @case('story')
+                                {{ __('Story') }}
+                                @break
+                            @case('art')
+                                {{ __('Art') }}
+                                @break
+                            @case('original creator')
+                                {{ __('Original Creator') }}
+                                @break
+                            @case('illustration')
+                                {{ __('Illustration') }}
+                                @break
+                        @endswitch: {{ $author['name'] }}
                     @endif
                 </a><br>
             @endforeach

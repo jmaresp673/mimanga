@@ -31,7 +31,7 @@
                 min-h-[4rem]"
          :class="isHovered && !openModal ? 'min-h-full' : ''">
 
-        <div class="p-2 flex flex-col justify-center h-full space-y-1">
+        <div class="w-full p-2 flex flex-col justify-center h-full space-y-1">
             <h3 class="text-sm font-semibold text-gray-100 px-1">
                 {{$edition->localized_title}} Nº{{ $volume->volume_number }}
             </h3>
@@ -132,7 +132,7 @@
 
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                    <p> {{ __('total pages: ') }}{{ $volume->total_pages }}</p>
+                                    <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
                                 </div>
 
                                 @if($volume->isbn)

@@ -53,7 +53,20 @@
                         class="flex flex-row flex-wrap justify-center sm:justify-start items-center gap-2 mt-1 !p-0">
                         @foreach($mainAuthors as $a)
                             <span class="flex flex-col sm:flex-row flex-wrap justify-center items-center">
-                            <div>{{ ucwords($a['role']) }}:&nbsp;</div>
+                            <div>
+                                @switch($a['role'])
+                                    @case('story & art')
+                                    {{ __('Story & Art') }}@break
+                                    @case('story')
+                                    {{ __('Story') }}@break
+                                    @case('art')
+                                    {{ __('Art') }}@break
+                                    @case('original creator')
+                                    {{ __('Original Creator') }}@break
+                                    @case('illustration')
+                                    {{ __('Illustration') }}@break
+                                @endswitch:&nbsp;
+                            </div>
                             <a href="{{ $a['id']
                                 ? route('authors.show', $a['id'])
                                 : '#' }}"

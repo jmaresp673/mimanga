@@ -112,7 +112,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-center text-gray-500">No hay volumenes disponibles.</p>
+                        <p class="text-center text-gray-500">{{ __('There is no volumes available') }}</p>
                     @endif
                 </section>
             </div>

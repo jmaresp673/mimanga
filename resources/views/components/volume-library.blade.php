@@ -119,7 +119,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                    <p> {{ __('total pages: ') }}{{ $volume->total_pages }}</p>
+                                    <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
                                 </div>
                                 @if($volume->pivot->purchase_date)
                                     <div>

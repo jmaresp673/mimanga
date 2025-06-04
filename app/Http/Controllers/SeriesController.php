@@ -41,7 +41,7 @@ class SeriesController extends Controller
             $existingSeries = $series;
 
             Log::info("Series created: {$series->id} - {$series->title}"); // <--- Añadir logging
-        }else {
+        } else {
             $updated = $existingSeries->fill([
                 'title' => $media['title']['english'] ?? $media['title']['romaji'],
                 'romaji_title' => $media['title']['romaji'],
@@ -147,6 +147,7 @@ class SeriesController extends Controller
 
         // extraer los autores principales de la serie
         $validRoles = ['story & art', 'story', 'art', 'illustration', 'original creator'];
+        $primaryOccupations = ['mangaka', 'writer', 'illustrator'];
         $mainAuthors = [];
         if (!empty($media['staff']['nodes']) && !empty($media['staff']['edges'])) {
             $processedAuthors = [];
@@ -159,6 +160,14 @@ class SeriesController extends Controller
                 // Verificar si ya procesamos este autor
                 $authorKey = $id ?: $name;
                 if (isset($processedAuthors[$authorKey])) {
+                    continue;
+                }
+
+                //Descarta autores cuya primary occupation no este en la lista de primary occupations
+                if (!array_intersect(
+                        array_map('strtolower', $staffNode['primaryOccupations']),
+                        array_map('strtolower', $primaryOccupations)
+                    )) {
                     continue;
                 }
 
