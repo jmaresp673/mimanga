@@ -23,8 +23,8 @@
     $chunksSm = array_chunk($items, 2);
 @endphp
 
-<div class="h-min">
-    <x-text class="text-2xl font-bold ml-3 !pb-0 sm:text-center">
+<div class="h-min pt-3">
+    <x-text class="text-xl sm:text-2xl font-bold ml-3 !pb-0 sm:text-center">
         {{ $title ?? $name }}
     </x-text>
     <x-text class="text-md font-bold !text-gray-400 ml-3 !py-0 sm:text-center">

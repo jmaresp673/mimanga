@@ -218,7 +218,7 @@ class MangaSearchController extends Controller
                   endDate { year }
                   genres
                   staff {
-                    nodes { id name { full } primaryOccupationsprimaryOccupations }
+                    nodes { id name { full } primaryOccupations }
                     edges { role }
                   }
                 }
