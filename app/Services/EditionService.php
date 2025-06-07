@@ -6,8 +6,11 @@ use DateTime;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Expr\Cast\Object_;
 use Symfony\Component\DomCrawler\Crawler;
 use InvalidArgumentException;
+use Spatie\Browsershot\Browsershot;
+
 
 class EditionService
 {
@@ -34,13 +37,16 @@ class EditionService
             return $this->fetchSpanish($native, $romaji, $english, $type);
         }
 
-        // placeholder para EN
-        throw new InvalidArgumentException("Lógica para '{$lang}' aún no implementada.");
+        if ($lang === 'EN') {
+            return $this->fetchEnglish($english, $type);
+        }
+        throw new InvalidArgumentException("Lógica para el idioma '{$lang}' aún no implementada.");
     }
 
 
     /**
      * Obtiene la edición segun tipo e idioma (MANGA|NOVEL|MANHWA).
+     * SOLO PARA EDICION ESPAÑOLA LISTADOMANGA
      *
      * @param array $collections Array de ['id'=>int, 'title'=>string, 'url'=>string]
      * @param string $type 'MANGA' o 'NOVEL'
@@ -119,9 +125,6 @@ class EditionService
         // Llamada AJAX para scrappear el buscador de ListadoManga
         //
         try {
-//            $resp = Http::get('https://www.whakoom.com/search?s=Go!%20Go!%20Loser%20Ranger!&fl=9');
-//            dd(json_encode($resp->body())  );
-
             $resp = Http::get('https://www.listadomanga.es/buscar.php', ['b' => $romaji]);
             // fallback, si no se encuentra el título en romaji, buscar por nativo
             if ($resp->json()['colecciones'] === []) {
@@ -195,7 +198,7 @@ class EditionService
                 ->eq(0)
                 ->html();
         } catch (InvalidArgumentException $e) {
-            @dd('Error en el procesamiento html: ' . $e->getMessage());
+            Log::error('Error en el procesamiento: ' . $e->getMessage());
         }
 
 
@@ -342,7 +345,8 @@ class EditionService
                 return $item !== null && $item['volumen'] !== null && $item['portada'] !== null;
             }));
         } catch (InvalidArgumentException $e) {
-            @dd('Error en el procesamiento: ' . $e->getMessage());
+            Log::error('Error en el procesamiento: ' . $e->getMessage());
+//            @dd( $e->getMessage());
         }
 
         // 4) Devolver el array con los datos de edicion, titulo, y volumenes
@@ -353,88 +357,303 @@ class EditionService
         ];
     }
 
-    protected function fetchEnglish(string $english, string $type): array
-    {
-
-        // Placeholder para lógica de scraping en inglés
-        // Aquí deberías implementar la lógica específica para buscar ediciones en inglés
-        // similar a lo que se hace en fetchSpanish, pero adaptada a las fuentes en inglés.
-
-        throw new InvalidArgumentException("Lógica para 'EN' aún no implementada.");
-    }
-
-
     /**
-     * Obtiene el ISBN de un volumen validando autor y número.
+     * Lógica de scraping de ediciones en inglés.
      *
-     * @param string $seriesTitle Título limpio de la serie (p.ej. "Chainsaw Man")
-     * @param string $expectedAuthors Lista CSV de autores esperados (p.ej. "Tatsuki Fujimoto")
-     * @param int $volumeNumber Número de volumen que buscamos
-     * @param string $lang Código de idioma para Google Books (en/fr)
-     * @return string|null           ISBN_13 o ISBN_10 si se encuentra, null sino
+     * @param string $query
+     * @param string $type
+     * @return array
      */
-    public function fetchIsbnForVolume(string $seriesTitle, string $expectedAuthors, string $lang = 'en'): ?string
+    protected function fetchEnglish(string $query, string $type): array
     {
+        $url = 'https://www.whakoom.com/search.aspx/Query';
+        $cookies = [
+            '.WHAKOOMUSER' => env('WHAKOOM_USER'),
+            '.wklang' => 'es',
+        ];
+
+        // Headers para la petición AJAX (Para evitar bloqueos de CORS y asegurar que se trata como una petición AJAX)
+        $headers = [
+            'Content-Type' => 'application/json; charset=UTF-8',
+            'X-Requested-With' => 'XMLHttpRequest',
+            'X-kl-saas-ajax-request' => 'Ajax_Request',
+            'Origin' => 'https://www.whakoom.com',
+            'Referer' => 'https://www.whakoom.com/search?s=' . urlencode($query) . '&fit=2&fl=9',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+            'Sec-Ch-Ua' => '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+            'Sec-Ch-Ua-Mobile' => '?0',
+            'Sec-Ch-Ua-Platform' => '"Windows"',
+            'Sec-Fetch-Dest' => 'empty',
+            'Sec-Fetch-Mode' => 'cors',
+            'Sec-Fetch-Site' => 'same-origin',
+            'Accept' => 'application/json, text/javascript, */*; q=0.01',
+            // CAMBIO CRÍTICO AQUÍ: Borrar 'br' y 'zstd'
+            'Accept-Encoding' => 'gzip, deflate',
+            'Accept-Language' => 'es-ES,es;q=0.9'
+        ];
+
+        $payload = [
+            'q' => $query,
+            'ft' => 0,
+            'fit' => '2', // 2 = "Colecciones"
+            'fp' => '',
+            'fl' => '9', // 9 = Ingles (USA)
+            'p' => 1 // Página 1
+        ];
+
         try {
-            $authorsToMatch = array_map('trim', explode(',', $expectedAuthors));
-
-            $resp = Http::get('https://www.googleapis.com/books/v1/volumes', [
-                'q' => $seriesTitle,
-                'langRestrict' => $lang,
-                'maxResults' => 40,
-            ]);
-
-            if (!$resp->ok()) {
-                return null;
+            $jar = new CookieJar();
+            foreach ($cookies as $name => $value) {
+                $jar = CookieJar::fromArray(
+                    array_map(fn($v) => (string)$v, $cookies),
+                    'whakoom.com'
+                );
             }
 
-            foreach ($resp->json('items', []) as $item) {
-                $info = $item['volumeInfo'] ?? [];
+            $response = Http::withOptions([
+                'cookies' => $jar,
+                'headers' => $headers,
+                'debug' => false,
+                'timeout' => 30,
+                // Forzar decodificación solo para gzip/deflate
+                'decode_content' => ['gzip', 'deflate']
+            ])->post($url, $payload);
 
-                // 1) Validar autor:
-                $itemAuthors = $info['authors'] ?? [];
-                if (!count(array_intersect($authorsToMatch, $itemAuthors))) {
-                    return null; // No coincide con los autores esperados
-                }
+            if ($response->successful()) {
+                $jsonResponse = $response->json();
 
-                // 2) Extraer titulo del title y numero de seriesInfo[bookDisplayNumber]
-                $title = $info['title'] ?? '';
-                // seriesInfo puede no existir, así que lo manejamos con un try-catch
-                try {
-                    $volumeNumber = $info['seriesInfo']['bookDisplayNumber'];
+                if (isset($jsonResponse['d']['searchResult'])) {
+                    $results = $this->processWhakoomResults($jsonResponse['d']['searchResult']);
 
-                    // también intentamos extraer el seriesId de seriesInfo
-                    //seriesInfo[volumeSeries][0]['seriesId'] ?? null
-                    $seriesInfo = $info['seriesInfo']['volumeSeries'][0]['seriesId'] ?? null;
-                } catch (\Exception $e) {
-                    $volumeNumber = 1; // Asignar 1 si no se encuentra
-                    $seriesInfo = null; // Asignar null si no se encuentra
-                }
+                    if ($results) {
+                        // llamamos a la funcion para extraer los datos y volumenes de la edicion
+                        $dataVolumes = $this->processWhakoomEdition($results['url'], $jar, ($results['type'] === 'Tomo único'));
 
-                // 3) Validar número de volumen
-                if (!preg_match('/' . preg_quote($seriesTitle, '/') . '/i', $title)) {
-                    return null; // No coincide con el título de la serie, no es un volumen de la serie
-                }
+                        // Definimos los 3 datos de data (para devolverlos igual que en español)
+                        $data['title'] = $results['title'];
+                        $data['editions'] = $dataVolumes['editions'] ?? []; // Volúmenes extraídos
+                        $data['general'] = [
+                            'title' => $results['title'],
+                            'sinopsis' => $dataVolumes['sinopsis'],
+                            'localized_publisher' => [
+                                'name' => $results['localized_publisher'],
+                                'web' => '' // No hay web en los resultados
+                            ],
+                            'format' => $results['format'],
+                            'type' => $results['type'],
+                            'numbers_localized' => $results['numbers_localized'],
+                        ];
 
-                // 3) Extraer el ISBN
-                // Primero busca ISBN_13, si no lo encuentra busca ISBN_10
-                foreach ($info['industryIdentifiers'] ?? [] as $id) {
-                    if ($id['type'] === 'ISBN_13') {
-                        return $id['identifier'];
+                        return $data;
                     }
                 }
-                foreach ($info['industryIdentifiers'] ?? [] as $id) {
-                    if ($id['type'] === 'ISBN_10') {
-                        return $id['identifier'];
+            }
+
+            return [
+                'error' => 'Error HTTP: ' . $response->status(),
+                'body' => $response->body() // Para diagnóstico
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'error' => 'Excepción: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString() // Para diagnóstico
+            ];
+        }
+    }
+
+    /**
+     * Procesa los resultados de búsqueda de Whakoom.
+     * Extrae todos los datos de la edicion excepto sinopsis y volumenes.
+     *
+     * @param string $html
+     * @return array|mixed
+     */
+    protected function processWhakoomResults(string $html)
+    {
+        $crawler = new Crawler($html);
+        $results = [];
+
+        $crawler->filter('.sresult')->each(function (Crawler $node) use (&$results) {
+            // 1. Extraer título y URL
+            $titleNode = $node->filter('.title a');
+            $title = $titleNode->count() > 0 ? $titleNode->text() : '';
+            $url = $titleNode->count() > 0 ? $titleNode->attr('href') : '';
+            $url = 'https://www.whakoom.com' . $url;
+
+            // 2. Extraer imagen
+            $image = $node->filter('.img img')->count() > 0
+                ? $node->filter('.img img')->attr('src')
+                : '';
+
+            // 3. Extraer editorial
+            $publisher = $node->filter('.pub')->count() > 0
+                ? $node->filter('.pub')->text()
+                : '';
+
+            // 4. Extraer información de la edición (corregido)
+            $editionInfo = '';
+            $language = '';
+            $type = '';
+            $format = '';
+            $volumes = 0;
+
+            // Buscar en todos los párrafos la información clave
+            $node->filter('p')->each(function (Crawler $pNode) use (&$editionInfo, &$language, &$type, &$format, &$volumes, $publisher) {
+                $text = $pNode->text();
+
+                // Patrones mejorados para detectar la información de edición
+                if (preg_match('/(colección de|tomo único|collection of|single volume)/i', $text)) {
+                    $editionInfo = $text;
+
+                    // Extraer tipo (Colección de/Tomo único)
+                    if (preg_match('/(colección de|collection of)/i', $text)) {
+                        $type = 'Colección de';
+                        // Extraer número de volúmenes
+                        if (preg_match('/(\d+)\s*(números|volumes|volúmenes|vols|vol)/i', $text, $matches)) {
+                            $volumes = (int)$matches[1];
+                        }
+                    } else {
+                        $type = 'Tomo único';
+                        $volumes = 1;
+                    }
+
+                    // Extraer formato (última parte después del punto)
+                    if (preg_match('/\.\s*([^.]+)$/', $text, $matches)) {
+                        $format = trim($matches[1]);
                     }
                 }
-                // Si no se encuentra ningún ISBN, devolver null
+
+                // Extraer idioma (después de la editorial)
+                if (strpos($text, $publisher) !== false && preg_match('/,\s*(.+)$/', $text, $matches)) {
+                    $language = trim($matches[1]);
+                }
+            });
+
+
+            // Sustituimos el thumb de la imagen por large
+            $image = str_replace('/thumb/', '/large/', $image);
+            $results[] = [
+                'title' => $title,
+                'url' => $url,
+                'image' => $image,
+                'localized_publisher' => $publisher,
+                'type' => $type, // Colección de, Tomo único, etc.
+                'format' => $format, // Softcover, Hardcover, Digital, etc.
+                'numbers_localized' => $volumes,
+                'raw_info' => $editionInfo,
+            ];
+        });
+
+        //filtrado de resultados, descartamos ediciones digitales y slipcase (format = Digital)
+        $results = array_filter($results, function ($item) {
+            return !str_contains($item['format'], 'Digital') && !str_contains($item['format'], 'digital')
+                && !str_contains($item['format'], 'Slipcase') && !str_contains($item['format'], 'slipcase');
+        });
+//        dd($results);
+
+        // Seleccionar la colección más relevante: la que tiene más volúmenes
+        $results = array_values($results);
+        if (empty($results)) {
+            return [];
+        }
+        usort($results, fn($a, $b) => ($b['numbers_localized'] ?? 0) <=> ($a['numbers_localized'] ?? 0));
+        return $results[0];
+    }
+
+    /**
+     * Procesa la edición de Whakoom y extrae los datos relevantes.
+     * Extrae la sinopsis y los volúmenes de la edición.
+     *
+     * @param string $html
+     * @param CookieJar|null $jar
+     * @param bool $isOneShot
+     * @return array
+     */
+    protected function processWhakoomEdition(string $html, CookieJar $jar = null, bool $isOneShot = false): array
+    {
+        if ($jar === null) {
+            $jar = CookieJar::fromArray([
+                '.WHAKOOMUSER' => env('WHAKOOM_USER'),
+                '.wklang' => 'es',
+            ], '.whakoom.com');
+        }
+
+        $data = ['sinopsis' => '', 'editions' => []];
+
+        try {
+            $editionHtml = Http::withOptions([
+                'cookies' => $jar,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
+                ],
+            ])->get($html)->body();
+
+            $crawlerSinopsis = new Crawler($editionHtml);
+            $sinopsisNode = $crawlerSinopsis->filter('div.wiki-text');
+            if ($sinopsisNode->count() > 0) {
+                $parrafos = [];
+                $sinopsisNode->filter('p')->each(function (Crawler $p) use (&$parrafos) {
+                    $parrafos[] = trim($p->text());
+                });
+                $data['sinopsis'] = implode("\r\n", $parrafos);
+
+                // Si sinopsis está vacía, asignar un valor por defecto
+                if ($sinopsisNode->text() === '') {
+                    $sinopsisNode->text(__('Sinopsis not available yet.'));
+                } else{
+                    $data['sinopsis'] = $sinopsisNode->text();
+                }
+            }
+
+            // Si es un tomo único, no hay volúmenes, devolvemos los datos y el volumen 1
+            if ($isOneShot) {
+                $data['editions'] = [
+                    [
+                        'volumen' => 1,
+                        'paginas' => null,
+                        'precio' => null,
+                        'fecha' => null,
+                        'portada' => null, // Usamos la portada que ya tenemos en $results
+                    ]
+                ];
+                return $data;
             }
 
         } catch (\Exception $e) {
-            Log::error('Error fetching ISBN: ' . $e->getMessage());
+            Log::error('Error extracting synopsis: ' . $e->getMessage());
         }
-        return null;
-    }
 
+        try {
+            $urlTodos = $html . "/todos";
+            $volumeHtml = Http::withOptions([
+                'cookies' => $jar,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (compatible; MiScraper/1.0)',
+                ],
+            ])->get($urlTodos)->body();
+
+            // Extraer imagen y número de cada volumen (lista ul con clase v2-cover-list)
+            $crawlerVolumes = new Crawler($volumeHtml);
+            $editions = [];
+            $crawlerVolumes->filter('ul.v2-cover-list > li')->each(function (Crawler $node) use (&$editions) {
+                $img = $node->filter('img')->count() > 0 ? $node->filter('img')->attr('src') : null;
+                $issueNumber = $node->filter('.issue-number')->count() > 0 ? $node->filter('.issue-number')->text() : null;
+                if ($img && $issueNumber) {
+                    $editions[] = [
+                        'volumen' => preg_replace('/[^0-9]/', '', $issueNumber),
+                        'portada' => str_replace('/small/', '/large/', $img),
+                        'paginas' => null,
+                        'precio' => null,
+                        'fecha' => null,
+                    ];
+                }
+            });
+//            dd($editions, "ediciones");
+            $data['editions'] = $editions;
+        } catch (\Exception $e) {
+            Log::error('Error extracting volúmenes: ' . $e->getMessage());
+        }
+        return $data;
+    }
 }

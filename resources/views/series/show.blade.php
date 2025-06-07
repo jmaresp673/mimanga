@@ -196,18 +196,33 @@
                     <div class="relative z-10 space-y-4"> <!-- Añade posición relativa y z-index mayor -->
                         <h3 class="text-xl font-semibold">{{__('Editions for this series')}}</h3>
 
-                        @if(count($editions))
+                        @if($esData || $enData)
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                <x-edition-card
-                                    :id="$media['id'].'ES'"
-                                    :cover="$editions[0]['portada']"
-                                    :title="$spanishTitle"
-                                    lang="ES"
-                                    :count="$general['numbers_localized']"
-                                    :edition="$general"
-                                    :volumes="$editions"
-                                    :publisher="$general['localized_publisher']['name']"
-                                />
+                                @if($enData)
+                                    <x-edition-card
+                                        :id="$media['id'].'EN'"
+                                        :cover="$enData['editions'][0]['portada']"
+                                        :title="$enData['title']"
+                                        lang="EN"
+                                        :count="$enData['general']['numbers_localized']"
+                                        :edition="$enData['general']"
+                                        :volumes="$enData['editions']"
+                                        :publisher="$enData['general']['localized_publisher']['name']"
+                                    />
+                                @endif
+                                @if($esData)
+                                    <x-edition-card
+                                        :id="$media['id'].'ES'"
+                                        :cover="$esData['editions'][0]['portada']"
+                                        :title="$esData['title']"
+                                        lang="ES"
+                                        :count="$esData['general']['numbers_localized']"
+                                        :edition="$esData['general']"
+                                        :volumes="$esData['editions']"
+                                        :publisher="$esData['general']['localized_publisher']['name']"
+                                    />
+                                @endif
+
                             </div>
                         @else
                             <p class="text-center text-gray-400 bg-gray-700/70 w-fit px-3 py-1 m-auto rounded-lg">No hay

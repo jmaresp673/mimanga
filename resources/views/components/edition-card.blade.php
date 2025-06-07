@@ -8,9 +8,9 @@
 ])
 
 <a href="{{ route('editions.show', ['id' => $id, 'slug' => \Illuminate\Support\Str::slug($title)]) }}"
-   class="group mx-auto rounded-lg w-fit h-full flex flex-col items-center justify-center text-gray-800 dark:text-gray-100 bg-white/50 hover:bg-gray-100  dark:bg-gray-800/70 dark:hover:bg-gray-800 transition-all duration-200">
+   class="group border shadow-md mx-auto rounded-lg w-fit h-full flex flex-col items-center justify-start text-gray-800 dark:text-gray-100 bg-white/50 hover:bg-gray-100  dark:bg-gray-800/70 dark:hover:bg-gray-800 transition-all duration-200">
     {{-- Tarjeta de edición --}}
-    <div class="border rounded-lg p-4 shadow-md flex flex-col items-center">
+    <div class="rounded-lg p-4 flex flex-col items-center">
         {{-- Portada del primer volumen --}}
         @if($cover)
             <img src="{{ $cover }}"

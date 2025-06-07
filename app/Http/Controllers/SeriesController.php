@@ -165,9 +165,9 @@ class SeriesController extends Controller
 
                 //Descarta autores cuya primary occupation no este en la lista de primary occupations
                 if (!array_intersect(
-                        array_map('strtolower', $staffNode['primaryOccupations']),
-                        array_map('strtolower', $primaryOccupations)
-                    )) {
+                    array_map('strtolower', $staffNode['primaryOccupations']),
+                    array_map('strtolower', $primaryOccupations)
+                )) {
                     continue;
                 }
 
@@ -205,16 +205,19 @@ class SeriesController extends Controller
         // después de extraer los datos de la serie, llamamos al controlador de ediciones
         // para obtener las ediciones disponibles en español
         $esData = EditionController::search($media, $mainAuthors, $anilistId, 'ES');
+        $enData = EditionController::search($media, $mainAuthors, $anilistId, 'EN');
 
-//        dd($esData, $media);
+//        dd($esData, $enData);
         return view('series.show', [
             'media' => $media,
             'mainAuthors' => $mainAuthors,
-            // en caso de que no haya una edicion para el idioma de ese manga, lo marcamos como null
+            'esData' => $esData ?? [],
+            'enData' => $enData ?? [],
+//            'general' => $esData['general'] ?? [],
+//            'editions' => $esData['editions'] ?? [],
+//            'spanishTitle' => $esData['title'] ?? null,
             // para evitar conflictos
-            'spanishTitle' => $esData['title'] ?? null,
-            'editions' => $esData['editions'] ?? [],
-            'general' => $esData['general'] ?? [],
+            // en caso de que no haya una edicion para el idioma de ese manga, lo marcamos como null
         ]);
     }
 }

@@ -24,12 +24,12 @@ class EditionController extends Controller
     public static function search(array $media, array $mainAuthors, int $anilistId, string $lang): array
     {
         $cacheKey = 'edition_' . md5(json_encode([
-            $media['title']['native'],
-            $lang,
-            $media['title']['romaji'],
-            $media['title']['english'] ?? "",
-            $media['format'] ?? 'MANGA'
-        ]));
+                $media['title']['native'],
+                $lang,
+                $media['title']['romaji'],
+                $media['title']['english'] ?? "",
+                $media['format'] ?? 'MANGA'
+            ]));
 
         $data = cache()->remember($cacheKey, now()->addMinutes(30), function () use ($media, $lang) {
             try {
@@ -112,7 +112,6 @@ class EditionController extends Controller
                         'sinopsis' => $data['general']['sinopsis'] ?? "No hay sinopsis disponible.",
                         'publisher_id' => $existingPublisher->id,
                         'language' => $lang,
-//                        'edition_total_volumes' => $data['general']['numbers_localized'] ?? 1,
                         'edition_total_volumes' => is_numeric($data['general']['numbers_localized'] ?? null)
                             ? (int)$data['general']['numbers_localized']
                             : (isset($data['editions']) ? count($data['editions']) : null),
@@ -136,9 +135,9 @@ class EditionController extends Controller
                 foreach ($data['editions'] as $volumeData) {
                     // comprueba si volumenData tiene fecha a nulo, si la tiene es que es un volumen aun
                     // no editado/publicado, salta el volumen
-                    if (!$volumeData['fecha']) {
-                        continue;
-                    }
+//                    if (!$volumeData['fecha']) {
+//                        continue;
+//                    }
                     $existingVolume = Volume::where('series_id', $anilistId)
                         ->where('edition_id', $editionId)
                         ->where('volume_number', $volumeData['volumen'])
@@ -149,20 +148,20 @@ class EditionController extends Controller
                         $volume->series_id = $anilistId;
                         $volume->edition_id = $editionId;
                         $volume->volume_number = $volumeData['volumen'];
-                        $volume->total_pages = $volumeData['paginas'];
-                        $volume->price = $volumeData['precio'];
-                        $volume->release_date = $volumeData['fecha'];
-                        $volume->cover_image_url = $volumeData['portada'];
+                        $volume->total_pages = $volumeData['paginas'] ?? null;
+                        $volume->price = $volumeData['precio'] ?? null;
+                        $volume->release_date = $volumeData['fecha'] ?? null;
+                        $volume->cover_image_url = $volumeData['portada'] ?? null;
 
 //                        dd($data['editions'][0], $volumeData, $volume);
                         $volume->save();
                         Log::info("Volume created: {$volume->id} / {$volume->edition->localized_title} - {$volume->volume_number}");
                     } else {
                         $updatedVolume = $existingVolume->fill([
-                            'total_pages' => $volumeData['paginas'],
-                            'price' => $volumeData['precio'],
-                            'release_date' => $volumeData['fecha'],
-                            'cover_image_url' => $volumeData['portada'],
+                            'total_pages' => $volumeData['paginas'] ?? null,
+                            'price' => $volumeData['precio'] ?? null,
+                            'release_date' => $volumeData['fecha'] ?? null,
+                            'cover_image_url' => $volumeData['portada'] ?? null,
                         ])->isDirty();
 
                         if ($updatedVolume) {
@@ -178,13 +177,6 @@ class EditionController extends Controller
         return $data ?? [];
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -215,27 +207,4 @@ class EditionController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Edition $edition)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEditionRequest $request, Edition $edition)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Edition $edition)
-    {
-        //
-    }
 }

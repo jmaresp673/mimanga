@@ -22,6 +22,23 @@
                         <i class="fa-solid fa-book size-[1.2em]"></i>
                         <span class="ml-2">{{ __('Library') }}</span>
                     </x-nav-link>
+                    <x-nav-link class="hidden lg:flex cursor-pointer" onclick="my_modal_about.showModal()">
+                        <i class="fa-solid fa-circle-info size-[1.2em]"></i>
+                        <span class="ml-2">{{ __('About') }}</span>
+                    </x-nav-link>
+                    <dialog id="my_modal_about" class="modal !m-0 !p-0">
+                        <div class="modal-box">
+                            <h3 class="text-lg font-bold">{{__('About this application')}}</h3>
+                            <p class="py-4">{{__('Developed by Javier Martínez Espinar')}}</p>
+                            <p class="py-4">{{__('Higher Education in Web Application Development')}}</p>
+                            <p class="py-4">IES Trassierra &middot; Córdoba</p>
+                            <div class="modal-action">
+                                <form method="dialog">
+                                    <x-primary-button>{{__('Close')}}</x-primary-button>
+                                </form>
+                            </div>
+                        </div>
+                    </dialog>
                 </div>
             </div>
 
@@ -155,9 +172,28 @@
             </div>
         </div>
 
-        <div class="pt-2 pb-3 space-y-1">
+        <div class="pt-2 pb-3 space-y-1 border-b border-gray-200 dark:border-gray-600">
             <x-dark-button class="flex"/>
             <x-language-button class="flex"/>
         </div>
+        <x-nav-link class="block lg:hidden cursor-pointer w-full px-4 pt-3 pb-3 text-start text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-800 transition duration-150 ease-in-out" onclick="my_modal_about_2.showModal()">
+            <i class="fa-solid fa-circle-info size-[1.2em]"></i>
+            <span class="ml-2">{{ __('About') }}</span>
+        </x-nav-link>
+        <dialog id="my_modal_about_2" class="modal !m-0 !p-0">
+            <div class="modal-box">
+                <h3 class="text-lg font-bold">{{__('About this application')}}</h3>
+                <p class="py-4">{{__('Developed by Javier Martínez Espinar')}}</p>
+                <p class="py-4">{{__('Higher Education in Web Application Development')}}</p>
+                <p class="py-4">IES Trassierra &middot; Córdoba</p>
+
+                <div class="modal-action">
+                    <form method="dialog">
+                        <!-- if there is a button in form, it will close the modal -->
+                        <button class="btn">{{__('Close')}}</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
     </div>
 </nav>

@@ -35,7 +35,8 @@
         {{ $slot }}
     </main>
 </div>
-<div class="md:hidden z-[999] dock dock-md border-t border-1 border-gray-600 shadow-lg rounded-t-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
+<div
+    class="md:hidden z-[999] dock dock-md border-t border-1 border-gray-600 shadow-lg rounded-t-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
     <x-nav-link class="text-center"
                 :href="route('manga.search')"
                 :active="request()->routeIs('manga.search')"
@@ -49,6 +50,19 @@
                 :class="request()->routeIs('user.index') ? 'border-indigo-500 dark:border-indigo-600 bg-indigo-100 dark:bg-indigo-900/50' : ''"> {{-- ? 'dock-active' : ''"--}}
         <i class="fa-solid fa-book size-[1.2em]"></i>
         <span class="dock-label">{{__('Library')}}</span>
+    </x-nav-link>
+</div>
+<div
+    class="fixed hidden sm:flex flex-col lg:hidden z-[999] w-20 h-36 dock-md !p-0 !m-0 bottom-[20%] right-0 items-center justify-around border-l border-b border-t border-1 border-gray-600 shadow-lg rounded-l-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white">
+    <x-nav-link class="text-center"
+                :href="route('manga.search')"
+                :active="request()->routeIs('manga.search')">
+        <i class="fa-solid fa-home text-3xl"></i>
+    </x-nav-link>
+    <x-nav-link class="text-center"
+                :href="route('user.index')"
+                :active="request()->routeIs('user.index')">
+        <i class="fa-solid fa-book text-3xl"></i>
     </x-nav-link>
 </div>
 </body>
