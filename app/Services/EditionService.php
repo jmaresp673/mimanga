@@ -594,7 +594,9 @@ class EditionService
             if ($sinopsisNode->count() > 0) {
                 $parrafos = [];
                 $sinopsisNode->filter('p')->each(function (Crawler $p) use (&$parrafos) {
-                    $parrafos[] = trim($p->text());
+                    $texto = trim($p->text());
+                    $texto = str_replace('Argumento', '', $texto);
+                    $parrafos[] = $texto;
                 });
                 $data['sinopsis'] = implode("\r\n", $parrafos);
 
