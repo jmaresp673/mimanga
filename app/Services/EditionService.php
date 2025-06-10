@@ -592,19 +592,23 @@ class EditionService
             $crawlerSinopsis = new Crawler($editionHtml);
             $sinopsisNode = $crawlerSinopsis->filter('div.wiki-text');
             if ($sinopsisNode->count() > 0) {
+                // Elimina el h2 "Argumento" si existe
+                $sinopsisNode->filter('h2')->each(function (Crawler $node) {
+                    if (stripos($node->text(), 'Argumento') !== false) {
+                        $node->getNode(0)->parentNode->removeChild($node->getNode(0));
+                    }
+                });
+
                 $parrafos = [];
                 $sinopsisNode->filter('p')->each(function (Crawler $p) use (&$parrafos) {
                     $texto = trim($p->text());
-                    $texto = str_replace('Argumento', '', $texto);
                     $parrafos[] = $texto;
                 });
-                $data['sinopsis'] = implode("\r\n", $parrafos);
+                $data['sinopsis'] = implode("\n\n", $parrafos);
 
-                // Si sinopsis está vacía, asignar un valor por defecto
-                if ($sinopsisNode->text() === '') {
-                    $sinopsisNode->text(__('Sinopsis not available yet.'));
-                } else{
-                    $data['sinopsis'] = $sinopsisNode->text();
+                // Si la sinopsis está vacía, asignar un valor por defecto
+                if (trim($data['sinopsis']) === '') {
+                    $data['sinopsis'] = __('Sinopsis not available yet.');
                 }
             }
 

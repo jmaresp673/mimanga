@@ -50,7 +50,7 @@
                     <p class="text-xs text-gray-300">
                         {{ $volume->release_date->format('d/m/Y') }}
                     </p>
-                @else
+                @elseif($edition->language === "ES")
                     <p class="text-xs text-gray-300">
                         {{__('Not available yet')}}
                     </p>
@@ -124,10 +124,10 @@
                                 </form>
                             </dialog>
                             <div class="text-center">
-                                @if($volume->price == 0)
+                                @if($volume->price == 0 && $edition->language === "ES")
                                     <p class="text-lg font-semibold">{{__('PVP: ')}} <span
                                             class="text-sm font-semibold text-gray-400">TBA</span></p>
-                                @else
+                                @elseif($edition->language === "ES")
                                     <p class="text-lg font-semibold">{{__('PVP: ')}} {{ $volume->price }} €</p>
                                 @endif
                             </div>
@@ -136,27 +136,31 @@
                         <!-- Detalles -->
                         <div class="col-span-2 space-y-4 text-center sm:text-left">
                             <div class="grid grid-cols-2 gap-4">
-                                @if($volume->total_pages)
-                                    <div>
-                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
-                                        <p> {{ $volume->release_date->format('d/m/Y') }}</p>
-                                    </div>
-
-                                    <div>
-                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                        <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
-                                    </div>
+                                @if($edition->language === "EN")
                                 @else
-                                    <div class="col-span-2 text-center sm:text-left">
-                                        <h4 class="text-lg font-semibold text-gray-400 mb-1">{{__('Not available yet')}}</h4>
-                                    </div>
+                                    @if($volume->total_pages)
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Release Date')}}</h4>
+                                            <p> {{ $volume->release_date->format('d/m/Y') }}</p>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
+                                            <p> {{ __('Total pages: ') }}{{ $volume->total_pages }}</p>
+                                        </div>
+                                    @else
+                                        <div class="col-span-2 text-center sm:text-left">
+                                            <h4 class="text-lg font-semibold text-gray-400 mb-1">{{__('Not available yet')}}</h4>
+                                        </div>
+                                    @endif
+                                    @if($volume->isbn)
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
+                                            <p> {{ __('ISBN: ') }}{{ $volume->isbn }}</p>
+                                        </div>
+                                    @endif
                                 @endif
-                                @if($volume->isbn)
-                                    <div>
-                                        <h4 class="text-sm font-semibold text-gray-400 mb-1">{{__('Pages')}}</h4>
-                                        <p> {{ __('ISBN: ') }}{{ $volume->isbn }}</p>
-                                    </div>
-                                @endif
+
                             </div>
 
                             {{-- Botones de accion --}}
