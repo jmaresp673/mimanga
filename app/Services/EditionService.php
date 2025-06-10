@@ -450,14 +450,14 @@ class EditionService
             }
 
             return [
-                'error' => 'Error HTTP: ' . $response->status(),
-                'body' => $response->body() // Para diagnóstico
+//                'error' => 'Error HTTP: ' . $response->status(),
+//                'body' => $response->body() // Para diagnóstico
             ];
 
         } catch (\Exception $e) {
             return [
-                'error' => 'Excepción: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString() // Para diagnóstico
+//                'error' => 'Excepción: ' . $e->getMessage(),
+//                'trace' => $e->getTraceAsString() // Para diagnóstico
             ];
         }
     }
@@ -554,11 +554,14 @@ class EditionService
 
         // Seleccionar la colección más relevante: la que tiene más volúmenes
         $results = array_values($results);
-        if (empty($results)) {
+        if (!$results) {
             return [];
         }
+
         usort($results, fn($a, $b) => ($b['numbers_localized'] ?? 0) <=> ($a['numbers_localized'] ?? 0));
-        return $results[0];
+        if ($results[0]){
+            return $results[0];
+        }
     }
 
     /**
@@ -655,7 +658,7 @@ class EditionService
                     ];
                 }
             });
-//            dd($editions, "ediciones");
+//            dd($data['editions']);
             $data['editions'] = $editions;
         } catch (\Exception $e) {
             Log::error('Error extracting volúmenes: ' . $e->getMessage());

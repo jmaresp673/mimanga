@@ -198,7 +198,7 @@
 
                         @if($esData || $enData)
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                @if($enData)
+                                @if($enData && $enData['editions'])
                                     <x-edition-card
                                         :id="$media['id'].'EN'"
                                         :cover="$enData['editions'][0]['portada']"
@@ -210,7 +210,7 @@
                                         :publisher="$enData['general']['localized_publisher']['name']"
                                     />
                                 @endif
-                                @if($esData)
+                                @if($esData && $esData['editions'])
                                     <x-edition-card
                                         :id="$media['id'].'ES'"
                                         :cover="$esData['editions'][0]['portada']"
