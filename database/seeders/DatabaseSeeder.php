@@ -61,8 +61,11 @@ class DatabaseSeeder extends Seeder
 
         // Crear usuario de prueba
         $user = User::factory()->create([
-            'email' => 'admin@example.com',
-        ]);
+                'name' => 'Invitado',
+                'email' => 'invitado@invitado',
+                'password' => 'invitado',
+                'email_verified_at' => now(),
+            ]);
 
         // Asignar volúmenes al usuario
         $volumes = Volume::inRandomOrder()->limit(10)->get();
